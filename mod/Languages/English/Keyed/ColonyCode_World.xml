@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <!-- Registry / bridge -->
+  <ColonyCodeW_BridgeNotRunning>Colony Code bridge is not running. Check the mod settings.</ColonyCodeW_BridgeNotRunning>
+  <ColonyCodeW_SessionConnected>Claude Code connected: {0}</ColonyCodeW_SessionConnected>
+
+  <!-- Agent states -->
+  <ColonyCodeW_State_Idle>idle</ColonyCodeW_State_Idle>
+  <ColonyCodeW_State_Thinking>thinking</ColonyCodeW_State_Thinking>
+  <ColonyCodeW_State_Reading>reading</ColonyCodeW_State_Reading>
+  <ColonyCodeW_State_Editing>editing</ColonyCodeW_State_Editing>
+  <ColonyCodeW_State_Running>running</ColonyCodeW_State_Running>
+  <ColonyCodeW_State_Testing>testing</ColonyCodeW_State_Testing>
+  <ColonyCodeW_State_WaitingUser>waiting for you</ColonyCodeW_State_WaitingUser>
+  <ColonyCodeW_State_Blocked>blocked</ColonyCodeW_State_Blocked>
+  <ColonyCodeW_State_Done>done</ColonyCodeW_State_Done>
+  <ColonyCodeW_State_Error>error</ColonyCodeW_State_Error>
+  <ColonyCodeW_WorkingRemotely>(working remotely)</ColonyCodeW_WorkingRemotely>
+
+  <!-- Residents -->
+  <ColonyCodeW_InspectAgent>Agent: {0} ({1}), {2}</ColonyCodeW_InspectAgent>
+  <ColonyCodeW_LinkNoAgent>no agent</ColonyCodeW_LinkNoAgent>
+  <ColonyCodeW_LordReport>Living at the colony as a remote worker.</ColonyCodeW_LordReport>
+  <ColonyCodeW_ResidentLeaves>{0} has had no powered agent desk for a day and is leaving the colony.</ColonyCodeW_ResidentLeaves>
+  <ColonyCodeW_ResidentDied>Remote worker {0} has died.</ColonyCodeW_ResidentDied>
+
+  <!-- Arrival -->
+  <ColonyCodeW_LetterArrivalLabel>Remote worker arrived: {0}</ColonyCodeW_LetterArrivalLabel>
+  <ColonyCodeW_LetterArrivalText>{0}, a remote worker, has arrived to take one of your powered agent desks.\n\nRemote workers are friendly residents, not colonists: they do not eat, sleep or need recreation, and you cannot draft or order them. Whenever one of your Claude Code agents is busy, a remote worker embodies it, codes at their desk and walks to the decision terminal when the agent needs you.\n\nEach powered agent desk brings one remote worker (up to three, plus two more for every powered server rack). A remote worker without a powered desk for a day leaves.</ColonyCodeW_LetterArrivalText>
+
+  <!-- Buildings -->
+  <ColonyCodeW_DeskFree>No remote worker yet. A powered desk brings one (up to the server rack limit).</ColonyCodeW_DeskFree>
+  <ColonyCodeW_DeskOwner>Desk of {0}: {1}</ColonyCodeW_DeskOwner>
+  <ColonyCodeW_DeskResidentNoAgent>Desk of {0} (no agent right now)</ColonyCodeW_DeskResidentNoAgent>
+  <ColonyCodeW_OpenDecisions>Decisions ({0})</ColonyCodeW_OpenDecisions>
+  <ColonyCodeW_OpenDecisionsDesc>Review and answer the permission requests and questions your agents are waiting on.</ColonyCodeW_OpenDecisionsDesc>
+  <ColonyCodeW_OpenDecisionsCount>Open decisions: {0}</ColonyCodeW_OpenDecisionsCount>
+  <ColonyCodeW_TaskBoardCounts>Goals: {0} active, {1} done, {2} failed</ColonyCodeW_TaskBoardCounts>
+  <ColonyCodeW_TaskBoardCurrent>Current: {0} ({1})</ColonyCodeW_TaskBoardCurrent>
+
+  <!-- Jobs -->
+  <ColonyCodeW_ReportCoding>coding: {0}.</ColonyCodeW_ReportCoding>
+
+  <!-- Desk gizmos -->
+  <ColonyCodeW_GizmoAgentCard>Agent card</ColonyCodeW_GizmoAgentCard>
+  <ColonyCodeW_GizmoAgentCardDesc>Open the card of the agent this desk's remote worker embodies: state, activity, log and controls.</ColonyCodeW_GizmoAgentCardDesc>
+  <ColonyCodeW_GizmoReview>Review changes</ColonyCodeW_GizmoReview>
+  <ColonyCodeW_GizmoReviewDesc>Review this agent's session: worktrees, diffs, and Merge / Request changes / Reject.</ColonyCodeW_GizmoReviewDesc>
+  <ColonyCodeW_GizmoNoAgent>No agent is working at this desk right now.</ColonyCodeW_GizmoNoAgent>
+  <ColonyCodeW_GizmoNoSession>This agent has no Claude Code session yet.</ColonyCodeW_GizmoNoSession>
+
+  <!-- Desk focus (cosmetic) -->
+  <ColonyCodeW_Focus>Focus: {0}</ColonyCodeW_Focus>
+  <ColonyCodeW_FocusWithReasons>Focus: {0} ({1})</ColonyCodeW_FocusWithReasons>
+  <ColonyCodeW_FocusGood>good</ColonyCodeW_FocusGood>
+  <ColonyCodeW_FocusOk>ok</ColonyCodeW_FocusOk>
+  <ColonyCodeW_FocusPoor>poor</ColonyCodeW_FocusPoor>
+  <ColonyCodeW_FocusOutdoors>outdoors</ColonyCodeW_FocusOutdoors>
+  <ColonyCodeW_FocusDirty>dirty</ColonyCodeW_FocusDirty>
+  <ColonyCodeW_FocusCold>too cold</ColonyCodeW_FocusCold>
+  <ColonyCodeW_FocusHot>too hot</ColonyCodeW_FocusHot>
+  <ColonyCodeW_FocusPlain>plain room</ColonyCodeW_FocusPlain>
+
+  <!-- Speech -->
+  <ColonyCodeW_SpeechGoalDone>Shipped it! {0}</ColonyCodeW_SpeechGoalDone>
+  <ColonyCodeW_SpeechGoalFailed>That one failed: {0}</ColonyCodeW_SpeechGoalFailed>
+  <ColonyCodeW_SpeechDelegate>{0} → {1}: {2}</ColonyCodeW_SpeechDelegate>
+  <ColonyCodeW_SpeechDelegateShort>{0} → {1}: can you take this one?</ColonyCodeW_SpeechDelegateShort>
+  <ColonyCodeW_SpeechWorkerDone>{0} → {1}: done!</ColonyCodeW_SpeechWorkerDone>
+  <ColonyCodeW_Teammate>teammate</ColonyCodeW_Teammate>
+
+  <!-- Starting remote office -->
+  <ColonyCodeW_LetterOfficeLabel>Remote office online</ColonyCodeW_LetterOfficeLabel>
+  <ColonyCodeW_LetterOfficeText>Your remote office is online. Start Claude Code with the Colony Code plugin to put {0} to work.\n\nRemote workers are friendly residents, not colonists: they do not eat, sleep or need recreation, and you cannot draft or order them. Whenever one of your Claude Code agents is busy, a remote worker embodies it, codes at their desk and walks to the decision terminal when the agent needs you.\n\nThe office uplinks power the office around the clock. Networking is already researched, so you can build more desks, server racks and uplinks later.</ColonyCodeW_LetterOfficeText>
+  <ColonyCodeW_LetterOfficeNoRoomLabel>No room for the remote office</ColonyCodeW_LetterOfficeNoRoomLabel>
+  <ColonyCodeW_LetterOfficeNoRoomText>There was no flat, open spot near your landing site for the starting remote office, so it was not built.\n\nResearch Networking and build agent desks yourself: each powered desk brings one remote worker to embody your Claude Code agents.</ColonyCodeW_LetterOfficeNoRoomText>
+
+</LanguageData>

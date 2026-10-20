@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Duties of remote workers, set by ColonyCode.World.LordToil_AgentResident from the linked agent's
+       state. Focus is the resident's desk (or the decision terminal). hook HighPriority (the default)
+       is what non-colonist pawns run. -->
+
+  <!-- The linked agent is busy: code at the assigned desk. -->
+  <DutyDef>
+    <defName>ColonyCode_CodeAtDesk</defName>
+    <hook>HighPriority</hook>
+    <thinkNode Class="ThinkNode_Priority">
+      <subNodes>
+        <li Class="ColonyCode.World.JobGiver_CodeAtDesk" />
+        <li Class="ColonyCode.World.JobGiver_WanderInDeskRoom">
+          <wanderRadius>3</wanderRadius>
+          <expiryInterval>120</expiryInterval>
+        </li>
+        <li Class="JobGiver_Idle">
+          <ticks>60</ticks>
+        </li>
+      </subNodes>
+    </thinkNode>
+  </DutyDef>
+
+  <!-- The linked agent waits on the player: stand at the nearest decision terminal. -->
+  <DutyDef>
+    <defName>ColonyCode_AwaitAtTerminal</defName>
+    <hook>HighPriority</hook>
+    <thinkNode Class="ThinkNode_Priority">
+      <subNodes>
+        <li Class="ColonyCode.World.JobGiver_AwaitAtTerminal" />
+        <li Class="ColonyCode.World.JobGiver_WanderInDeskRoom">
+          <wanderRadius>3</wanderRadius>
+          <expiryInterval>120</expiryInterval>
+        </li>
+        <li Class="JobGiver_Idle">
+          <ticks>60</ticks>
+        </li>
+      </subNodes>
+    </thinkNode>
+  </DutyDef>
+
+  <!-- No agent, or the agent is idle/done: loiter near the desk. -->
+  <DutyDef>
+    <defName>ColonyCode_IdleNearDesk</defName>
+    <hook>HighPriority</hook>
+    <thinkNode Class="ThinkNode_Priority">
+      <subNodes>
+        <li Class="ColonyCode.World.JobGiver_WanderInDeskRoom">
+          <wanderRadius>5</wanderRadius>
+          <ticksBetweenWandersRange>200~500</ticksBetweenWandersRange>
+        </li>
+        <li Class="JobGiver_Idle">
+          <ticks>120</ticks>
+        </li>
+      </subNodes>
+    </thinkNode>
+  </DutyDef>
+
+</Defs>

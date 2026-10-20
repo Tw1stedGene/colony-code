@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <JobDef>
+    <defName>ColonyCode_Code</defName>
+    <driverClass>ColonyCode.World.JobDriver_Code</driverClass>
+    <reportString>coding at TargetA.</reportString>
+    <allowOpportunisticPrefix>true</allowOpportunisticPrefix>
+  </JobDef>
+
+  <JobDef>
+    <defName>ColonyCode_AwaitDecision</defName>
+    <driverClass>ColonyCode.World.JobDriver_AwaitDecision</driverClass>
+    <reportString>waiting for your decision at TargetA.</reportString>
+    <casualInterruptible>true</casualInterruptible>
+  </JobDef>
+
+  <JobDef>
+    <defName>ColonyCode_Celebrate</defName>
+    <driverClass>ColonyCode.World.JobDriver_Celebrate</driverClass>
+    <reportString>celebrating a shipped goal.</reportString>
+    <casualInterruptible>true</casualInterruptible>
+  </JobDef>
+
+</Defs>

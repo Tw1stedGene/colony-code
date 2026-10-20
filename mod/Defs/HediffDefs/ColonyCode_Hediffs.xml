@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Permanent on every remote worker: no needs that would pull them away from the desk, no mental
+       breaks. They can still be hurt. -->
+  <HediffDef>
+    <defName>ColonyCode_RemoteLink</defName>
+    <label>remote link</label>
+    <description>Linked to a Claude Code session. Remote workers do not eat, sleep or need recreation, and do not have mental breaks. They can still be hurt.</description>
+    <hediffClass>ColonyCode.World.Hediff_RemoteLink</hediffClass>
+    <defaultLabelColor>(0.55, 0.75, 1.0)</defaultLabelColor>
+    <isBad>false</isBad>
+    <everCurableByItem>false</everCurableByItem>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <keepOnBodyPartRestoration>true</keepOnBodyPartRestoration>
+    <stages>
+      <li>
+        <blocksMentalBreaks>true</blocksMentalBreaks>
+        <blocksInspirations>true</blocksInspirations>
+        <disablesNeeds>
+          <li>Food</li>
+          <li>Rest</li>
+          <li>Joy</li>
+          <li>Beauty</li>
+          <li>Comfort</li>
+          <li>Outdoors</li>
+          <li>Indoors</li>
+          <li>RoomSize</li>
+          <li>DrugDesire</li>
+          <li MayRequire="Ludeon.RimWorld.Royalty">Authority</li>
+          <li MayRequire="Ludeon.RimWorld.Biotech">Learning</li>
+          <li MayRequire="Ludeon.RimWorld.Biotech">Play</li>
+          <li MayRequire="Ludeon.RimWorld.Biotech">KillThirst</li>
+        </disablesNeeds>
+      </li>
+    </stages>
+  </HediffDef>
+
+</Defs>

@@ -1,0 +1,7 @@
+.DS_Store
+refs/
+node_modules/
+*.tmp
+# Written by Claude Code each time it loads the plugin; plugin-tsconfig reads them.
+plugin/.claude-plugin/types/
+docs

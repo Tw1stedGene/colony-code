@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <MainButtonDef>
+    <defName>ColonyCode_Agents</defName>
+    <label>agents</label>
+    <description>Your Claude Code agents: connection, what each agent is doing, goals and open decisions.</description>
+    <tabWindowClass>ColonyCode.UI.MainTabWindow_Agents</tabWindowClass>
+    <order>75</order>
+    <closesWorldView>true</closesWorldView>
+  </MainButtonDef>
+
+</Defs>

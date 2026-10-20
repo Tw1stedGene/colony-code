@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <packageId>colonycode.rimworld</packageId>
+  <name>Colony Code</name>
+  <author>Tw1stedGene</author>
+  <url>https://github.com/Tw1stedGene/colony-code</url>
+  <modVersion>0.1.0</modVersion>
+  <supportedVersions>
+    <li>1.6</li>
+    <li>1.7</li>
+  </supportedVersions>
+  <description>Your Claude Code agents, as remote workers living in your colony.
+
+Colony Code shows the Claude Code sessions and subagents you run on your own machine as pawns in your normal colony. Every powered agent desk brings a friendly remote worker who lives there for good: no food, sleep or recreation needed, and no orders from you. While an agent is busy, a remote worker embodies it, codes at their desk, shows what the agent is doing, and comes to the decision terminal when the agent needs permission or an answer.
+
+How it works:
+- You run Claude Code yourself, signed in with your own account. The mod never handles logins, API keys or billing.
+- The Colony Code plugin for Claude Code reports to the game over a local HTTP bridge (127.0.0.1 only, protected by a random token).
+- From the game you can submit goals, message agents, and answer permission prompts.
+
+The game never runs commands itself. It only shows what Claude Code does and relays your answers.
+
+Not compatible with the Multiplayer mod.</description>
+  <incompatibleWith>
+    <li>rwmt.Multiplayer</li>
+  </incompatibleWith>
+</ModMetaData>

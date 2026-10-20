@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <!-- Common -->
+  <ColonyCode_PickAgent>Choose agent...</ColonyCode_PickAgent>
+  <ColonyCode_NoAgents>No agents yet. Start Claude Code with the Colony Code plugin.</ColonyCode_NoAgents>
+  <ColonyCode_NoAgentsLong>No agents yet. Run Claude Code with the Colony Code plugin installed; its sessions and subagents show up here.</ColonyCode_NoAgentsLong>
+  <ColonyCode_NoRegistry>Load a game to see your agents.</ColonyCode_NoRegistry>
+  <ColonyCode_Jump>Jump</ColonyCode_Jump>
+  <ColonyCode_Diff>Diff</ColonyCode_Diff>
+  <ColonyCode_ShowDiff>Show diff</ColonyCode_ShowDiff>
+  <ColonyCode_NoPawn>(working remotely)</ColonyCode_NoPawn>
+  <ColonyCode_AgentGone>This agent is no longer connected.</ColonyCode_AgentGone>
+  <ColonyCode_OpenConsole>Console</ColonyCode_OpenConsole>
+  <ColonyCode_OpenDecisions>Decisions ({0})</ColonyCode_OpenDecisions>
+  <ColonyCode_BridgeDown>The Colony Code bridge is not running. Check the mod settings.</ColonyCode_BridgeDown>
+
+  <!-- Agent states and roles -->
+  <ColonyCode_State_Idle>idle</ColonyCode_State_Idle>
+  <ColonyCode_State_Thinking>thinking</ColonyCode_State_Thinking>
+  <ColonyCode_State_Reading>reading</ColonyCode_State_Reading>
+  <ColonyCode_State_Editing>editing</ColonyCode_State_Editing>
+  <ColonyCode_State_Running>running</ColonyCode_State_Running>
+  <ColonyCode_State_Testing>testing</ColonyCode_State_Testing>
+  <ColonyCode_State_WaitingUser>waiting for you</ColonyCode_State_WaitingUser>
+  <ColonyCode_State_Blocked>blocked</ColonyCode_State_Blocked>
+  <ColonyCode_State_Done>done</ColonyCode_State_Done>
+  <ColonyCode_State_Error>error</ColonyCode_State_Error>
+  <ColonyCode_Role_lead>lead</ColonyCode_Role_lead>
+  <ColonyCode_Role_worker>worker</ColonyCode_Role_worker>
+
+  <!-- Goals -->
+  <ColonyCode_Goals>Goals</ColonyCode_Goals>
+  <ColonyCode_NoGoals>No goals yet. Open the console and type one.</ColonyCode_NoGoals>
+  <ColonyCode_GoalStatus_active>active</ColonyCode_GoalStatus_active>
+  <ColonyCode_GoalStatus_done>done</ColonyCode_GoalStatus_done>
+  <ColonyCode_GoalStatus_failed>failed</ColonyCode_GoalStatus_failed>
+  <ColonyCode_ProgressUnknown>in progress</ColonyCode_ProgressUnknown>
+  <ColonyCode_GoalDoneLabel>Work finished</ColonyCode_GoalDoneLabel>
+  <ColonyCode_GoalDoneText>Your agents finished a goal:\n\n{0}</ColonyCode_GoalDoneText>
+  <ColonyCode_GoalFailedLabel>Work failed</ColonyCode_GoalFailedLabel>
+  <ColonyCode_GoalFailedText>Your agents could not finish a goal:\n\n{0}</ColonyCode_GoalFailedText>
+
+  <!-- Agents main tab -->
+  <ColonyCode_AgentsTitle>Claude Code agents</ColonyCode_AgentsTitle>
+  <ColonyCode_StatusDetails>Port {0} - {1} session(s) - {2} agent(s) - {3} requests served</ColonyCode_StatusDetails>
+  <ColonyCode_StatusStopped>The bridge is stopped. {0}</ColonyCode_StatusStopped>
+  <ColonyCode_ColName>Name</ColonyCode_ColName>
+  <ColonyCode_ColRole>Role</ColonyCode_ColRole>
+  <ColonyCode_ColState>State</ColonyCode_ColState>
+  <ColonyCode_ColActivity>Activity</ColonyCode_ColActivity>
+  <ColonyCode_ColPawn>Resident</ColonyCode_ColPawn>
+  <ColonyCode_Interrupt>Stop</ColonyCode_Interrupt>
+  <ColonyCode_InterruptTip>Ask Claude Code to stop the current turn of this session.</ColonyCode_InterruptTip>
+
+  <!-- Console -->
+  <ColonyCode_ConsoleTitle>Colony Code console</ColonyCode_ConsoleTitle>
+  <ColonyCode_ConsoleHint>Type a goal and press Enter. Use @name message to talk to one agent, @all for everyone. Up/Down: history.</ColonyCode_ConsoleHint>
+  <ColonyCode_HintAll>@all   every agent</ColonyCode_HintAll>
+  <ColonyCode_Send>Send</ColonyCode_Send>
+  <ColonyCode_GoalFeed>Recent goals</ColonyCode_GoalFeed>
+  <ColonyCode_NoAgentMatch>No agent called "{0}".</ColonyCode_NoAgentMatch>
+  <ColonyCode_EmptyMessage>Type a message after the agent name.</ColonyCode_EmptyMessage>
+  <ColonyCode_SentGoal>Goal sent: {0}</ColonyCode_SentGoal>
+  <ColonyCode_SentMessage>Message to {0}: {1}</ColonyCode_SentMessage>
+
+  <!-- Decisions -->
+  <ColonyCode_DecisionsTitle>Agents waiting for you</ColonyCode_DecisionsTitle>
+  <ColonyCode_NoDecisions>No open decisions. Your agents are not waiting for anything.</ColonyCode_NoDecisions>
+  <ColonyCode_KindPermission>permission</ColonyCode_KindPermission>
+  <ColonyCode_KindQuestion>question</ColonyCode_KindQuestion>
+  <ColonyCode_Reason>Reason (optional):</ColonyCode_Reason>
+  <ColonyCode_NoOptions>This decision has no options to choose from.</ColonyCode_NoOptions>
+
+  <!-- Letters and alert -->
+  <ColonyCode_LetterPermissionLabel>{0} asks permission</ColonyCode_LetterPermissionLabel>
+  <ColonyCode_LetterQuestionLabel>{0} has a question</ColonyCode_LetterQuestionLabel>
+  <ColonyCode_LetterText>{0} is waiting for your answer:\n\n{1}</ColonyCode_LetterText>
+  <ColonyCode_LetterAddReason>Answer with a reason...</ColonyCode_LetterAddReason>
+  <ColonyCode_AlertLabel>Agents need you ({0})</ColonyCode_AlertLabel>
+  <ColonyCode_AlertExplanation>Claude Code is waiting for your answer. Click to open the decisions.</ColonyCode_AlertExplanation>
+
+  <!-- Monitor tab and diff window -->
+  <ColonyCode_TabMonitor>Monitor</ColonyCode_TabMonitor>
+  <ColonyCode_MonitorNoAgent>No agent at this desk</ColonyCode_MonitorNoAgent>
+  <ColonyCode_MonitorPickHint>No agent works at this desk yet. Use "Choose agent..." to watch one.</ColonyCode_MonitorPickHint>
+  <ColonyCode_NoLog>Nothing logged yet.</ColonyCode_NoLog>
+  <ColonyCode_NoDiffs>No file changes yet.</ColonyCode_NoDiffs>
+  <ColonyCode_LogDiffHeader>changed files:</ColonyCode_LogDiffHeader>
+  <ColonyCode_DiffTitle>Changes by {0}</ColonyCode_DiffTitle>
+  <ColonyCode_DiffFiles>Files ({0})</ColonyCode_DiffFiles>
+
+  <!-- Task board -->
+  <ColonyCode_TabTaskBoard>Tasks</ColonyCode_TabTaskBoard>
+  <ColonyCode_TaskBoardTitle>Task board</ColonyCode_TaskBoardTitle>
+  <ColonyCode_OpenTaskBoard>Task board</ColonyCode_OpenTaskBoard>
+  <ColonyCode_OpenTaskBoardGizmo>Open task board</ColonyCode_OpenTaskBoardGizmo>
+  <ColonyCode_OpenTaskBoardDesc>Open Claude Code's task list in a window you can move and resize.</ColonyCode_OpenTaskBoardDesc>
+  <ColonyCode_TaskOpenWindow>Open in window</ColonyCode_TaskOpenWindow>
+  <ColonyCode_TaskColTodo>To do ({0})</ColonyCode_TaskColTodo>
+  <ColonyCode_TaskColDoing>In progress ({0})</ColonyCode_TaskColDoing>
+  <ColonyCode_TaskColDone>Done ({0})</ColonyCode_TaskColDone>
+  <ColonyCode_TaskMore>+{0} more</ColonyCode_TaskMore>
+  <ColonyCode_TaskBlockedBy>Blocked by {0}</ColonyCode_TaskBlockedBy>
+  <ColonyCode_TaskJumpTip>Jump to {0}</ColonyCode_TaskJumpTip>
+  <ColonyCode_TaskBoardEmpty>No tasks yet — every prompt, subagent and task from the game gets a card here.</ColonyCode_TaskBoardEmpty>
+  <ColonyCode_TaskSrcGoal>Goal</ColonyCode_TaskSrcGoal>
+  <ColonyCode_TaskSrcAgent>Subagent</ColonyCode_TaskSrcAgent>
+  <ColonyCode_TaskSrcGame>From game</ColonyCode_TaskSrcGame>
+  <ColonyCode_TaskSrcClaude>Claude task</ColonyCode_TaskSrcClaude>
+  <ColonyCode_TaskResultFailed>Failed</ColonyCode_TaskResultFailed>
+  <ColonyCode_TaskResultInterrupted>Interrupted</ColonyCode_TaskResultInterrupted>
+  <ColonyCode_TaskForGoal>↳ for: {0}</ColonyCode_TaskForGoal>
+  <ColonyCode_TaskBoardInspect>To do {0} · In progress {1} · Done {2}</ColonyCode_TaskBoardInspect>
+
+  <!-- Sessions (v0.2) -->
+  <ColonyCode_SessionAny>any session</ColonyCode_SessionAny>
+  <ColonyCode_SessionNone>no session</ColonyCode_SessionNone>
+  <ColonyCode_SessionPick>Session: {0}</ColonyCode_SessionPick>
+  <ColonyCode_SessionPickTip>Which Claude Code session gets goals, @all messages and new tasks. "any session" lets the first one that asks take it.</ColonyCode_SessionPickTip>
+  <ColonyCode_SessionEndedTag>(ended)</ColonyCode_SessionEndedTag>
+  <ColonyCode_NoSessions>No Claude Code session has connected yet.</ColonyCode_NoSessions>
+  <ColonyCode_ColSession>Session</ColonyCode_ColSession>
+  <ColonyCode_ColUsage>Tokens and turns</ColonyCode_ColUsage>
+  <ColonyCode_ColWorktrees>Worktrees</ColonyCode_ColWorktrees>
+  <ColonyCode_UsageNone>no usage reported yet</ColonyCode_UsageNone>
+  <ColonyCode_UsageLine>in {0} · out {1} · {2} turn(s)</ColonyCode_UsageLine>
+  <ColonyCode_UsageTip>Input tokens: {0}
+Output tokens: {1}
+Cache read tokens: {2}
+Turns: {3}</ColonyCode_UsageTip>
+  <ColonyCode_WorktreeCount>{0} worktree(s)</ColonyCode_WorktreeCount>
+  <ColonyCode_Review>Review</ColonyCode_Review>
+  <ColonyCode_OpenJournal>Journal</ColonyCode_OpenJournal>
+  <ColonyCode_OpenCardTip>Click to open the agent card.</ColonyCode_OpenCardTip>
+
+  <!-- Questions and permissions (v0.2) -->
+  <ColonyCode_OtherAnswer>Other:</ColonyCode_OtherAnswer>
+  <ColonyCode_SendOther>Send answer</ColonyCode_SendOther>
+  <ColonyCode_SubmitAnswer>Submit</ColonyCode_SubmitAnswer>
+  <ColonyCode_SubmitNeedsChoice>Tick at least one option or type an answer.</ColonyCode_SubmitNeedsChoice>
+  <ColonyCode_LetterQuestionHint>Open this letter to answer.</ColonyCode_LetterQuestionHint>
+
+  <!-- Agent card -->
+  <ColonyCode_CardMeta>Session: {0} · {1}</ColonyCode_CardMeta>
+  <ColonyCode_CardResident>Resident: {0}</ColonyCode_CardResident>
+  <ColonyCode_CardTasks>In progress ({0})</ColonyCode_CardTasks>
+  <ColonyCode_CardNoTasks>No task in progress.</ColonyCode_CardNoTasks>
+  <ColonyCode_CardLog>Last {0} log lines</ColonyCode_CardLog>
+  <ColonyCode_CardMessage>Message</ColonyCode_CardMessage>
+  <ColonyCode_StopWorkerTip>Only the lead agent can be stopped: Claude Code can abort the session's turn, not one subagent.</ColonyCode_StopWorkerTip>
+
+  <!-- Journal -->
+  <ColonyCode_JournalTitle>Journal</ColonyCode_JournalTitle>
+  <ColonyCode_JournalEmpty>No finished goals yet. Goals that are done or failed are recorded here and kept in your save.</ColonyCode_JournalEmpty>
+  <ColonyCode_JournalDates>{0} - {1}</ColonyCode_JournalDates>
+  <ColonyCode_JournalAgents>agents: {0}</ColonyCode_JournalAgents>
+
+  <!-- Review window -->
+  <ColonyCode_ReviewTitle>Review</ColonyCode_ReviewTitle>
+  <ColonyCode_ReviewSessionLine>{0} · base branch {1}</ColonyCode_ReviewSessionLine>
+  <ColonyCode_ReviewMain>Main checkout (uncommitted)</ColonyCode_ReviewMain>
+  <ColonyCode_ReviewMainDirty>uncommitted changes</ColonyCode_ReviewMainDirty>
+  <ColonyCode_ReviewMainClean>clean</ColonyCode_ReviewMainClean>
+  <ColonyCode_ReviewWorktreeStats>{0} ahead · {1} file(s) · +{2} -{3}</ColonyCode_ReviewWorktreeStats>
+  <ColonyCode_ReviewNoList>No worktree list yet. It arrives when the session starts and after each turn.</ColonyCode_ReviewNoList>
+  <ColonyCode_ReviewRefresh>Refresh</ColonyCode_ReviewRefresh>
+  <ColonyCode_ReviewMerge>Merge</ColonyCode_ReviewMerge>
+  <ColonyCode_ReviewMergeTip>Merge {0} into {1} (git merge --no-ff). Nothing is pushed.</ColonyCode_ReviewMergeTip>
+  <ColonyCode_ReviewMergeDirty>The main checkout has uncommitted changes. Commit or stash them before merging.</ColonyCode_ReviewMergeDirty>
+  <ColonyCode_ReviewMergeDirtyShort>Merge is off: the main checkout has uncommitted changes.</ColonyCode_ReviewMergeDirtyShort>
+  <ColonyCode_ReviewRequestChanges>Request changes...</ColonyCode_ReviewRequestChanges>
+  <ColonyCode_ReviewRequestChangesTitle>Request changes on {0}</ColonyCode_ReviewRequestChangesTitle>
+  <ColonyCode_ReviewRequestChangesPrompt>Tell Claude what to change. Ctrl+Enter sends.</ColonyCode_ReviewRequestChangesPrompt>
+  <ColonyCode_ReviewReject>Reject</ColonyCode_ReviewReject>
+  <ColonyCode_ReviewRejectTip>Delete this worktree and its branch.</ColonyCode_ReviewRejectTip>
+  <ColonyCode_ReviewRejectTitle>Reject worktree?</ColonyCode_ReviewRejectTitle>
+  <ColonyCode_ReviewRejectConfirm>Reject {0}?
+
+This deletes the worktree at {1} and the branch {0}, including any work in it that was not merged. This cannot be undone.</ColonyCode_ReviewRejectConfirm>
+  <ColonyCode_ReviewBusy>Waiting for the answer to the last request.</ColonyCode_ReviewBusy>
+  <ColonyCode_ReviewNoAnswer>No answer to the last request. You can try again.</ColonyCode_ReviewNoAnswer>
+  <ColonyCode_ReviewSessionEnded>This session has ended.</ColonyCode_ReviewSessionEnded>
+  <ColonyCode_ReviewPending>{0}: waiting for Claude Code...</ColonyCode_ReviewPending>
+  <ColonyCode_ReviewSent>Sent: {0} {1}</ColonyCode_ReviewSent>
+  <ColonyCode_ReviewAction_merge>merge</ColonyCode_ReviewAction_merge>
+  <ColonyCode_ReviewAction_request_changes>request changes</ColonyCode_ReviewAction_request_changes>
+  <ColonyCode_ReviewAction_reject>reject</ColonyCode_ReviewAction_reject>
+  <ColonyCode_ReviewLoading>Loading the diff...</ColonyCode_ReviewLoading>
+  <ColonyCode_ReviewSlow>No answer yet. Is Claude Code running with an up-to-date Colony Code plugin?</ColonyCode_ReviewSlow>
+  <ColonyCode_ReviewPressRefresh>Press Refresh to load the diff.</ColonyCode_ReviewPressRefresh>
+  <ColonyCode_ReviewNoChanges>No changes.</ColonyCode_ReviewNoChanges>
+  <ColonyCode_ReviewTruncated>This diff is too big and was cut short.</ColonyCode_ReviewTruncated>
+  <ColonyCode_ReviewFiles>{0} file(s) · +{1} -{2}</ColonyCode_ReviewFiles>
+  <ColonyCode_ReviewCollapsed>... {0} unchanged lines (click to show)</ColonyCode_ReviewCollapsed>
+  <ColonyCode_FileStatus_added>added</ColonyCode_FileStatus_added>
+  <ColonyCode_FileStatus_modified>modified</ColonyCode_FileStatus_modified>
+  <ColonyCode_FileStatus_deleted>deleted</ColonyCode_FileStatus_deleted>
+  <ColonyCode_FileStatus_renamed>renamed</ColonyCode_FileStatus_renamed>
+  <ColonyCode_MergeOk>Done: {0} {1}. {2}</ColonyCode_MergeOk>
+  <ColonyCode_MergeFailed>Failed: {0} {1}. {2}</ColonyCode_MergeFailed>
+  <ColonyCode_MergeFailedLabel>Merge failed</ColonyCode_MergeFailedLabel>
+  <ColonyCode_MergeFailedText>Claude Code could not {0} {1}:</ColonyCode_MergeFailedText>
+
+  <!-- Task board: add task -->
+  <ColonyCode_TaskAdd>+ Add task</ColonyCode_TaskAdd>
+  <ColonyCode_TaskAddTip>Ask Claude Code to work on a task. Its card appears in To do and moves along while Claude works on it.</ColonyCode_TaskAddTip>
+  <ColonyCode_TaskAddTitle>Add a task</ColonyCode_TaskAddTitle>
+  <ColonyCode_TaskAddPrompt>Describe the task. Claude works on it when appropriate. Ctrl+Enter sends.</ColonyCode_TaskAddPrompt>
+  <ColonyCode_TaskSent>Task sent to Claude Code: {0}</ColonyCode_TaskSent>
+
+  <!-- Mod settings: starting remote office -->
+  <ColonyCode_SettingsOfficeHeader>Starting remote office (new games only):</ColonyCode_SettingsOfficeHeader>
+  <ColonyCode_SettingsOfficeToggle>Start with a remote office</ColonyCode_SettingsOfficeToggle>
+  <ColonyCode_SettingsOfficeToggleDesc>New industrial games (not tribal starts) begin with a small powered office near the landing site: agent desks with their remote workers, a decision terminal, a server rack, a task board and office uplinks for power. Networking is researched at the start.</ColonyCode_SettingsOfficeToggleDesc>
+  <ColonyCode_SettingsOfficeSmall>Small office: 2 desks</ColonyCode_SettingsOfficeSmall>
+  <ColonyCode_SettingsOfficeLarge>Large office: 4 desks, a second server rack and a lounge corner</ColonyCode_SettingsOfficeLarge>
+
+  <ColonyCode_TaskSrcWaiting>Waiting for Claude Code</ColonyCode_TaskSrcWaiting>
+  <ColonyCode_TaskQueuedNoSession>No Claude Code session is connected. The task waits on the board and goes to the next session that connects: {0}</ColonyCode_TaskQueuedNoSession>
+</LanguageData>

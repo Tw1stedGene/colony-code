@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <KeyBindingDef>
+    <defName>ColonyCode_OpenConsole</defName>
+    <label>open Colony Code console</label>
+    <category>Game</category>
+    <!-- Backslash: no vanilla binding uses it. BackQuote is Dev_ToggleDebugLog, which takes the key
+         first in Dev Mode and would trigger a startup conflict reset. -->
+    <defaultKeyCodeA>Backslash</defaultKeyCodeA>
+  </KeyBindingDef>
+
+</Defs>

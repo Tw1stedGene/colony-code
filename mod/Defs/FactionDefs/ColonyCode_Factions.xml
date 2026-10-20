@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Hidden allied faction of the remote workers who embody Claude Code agents. Never raids, trades
+       or sends caravans. Hidden factions have no goodwill, so the mod sets and keeps the relation with
+       the player at "ally" (ColonyCode.World.ResidentUtility.EnsureFaction). -->
+  <FactionDef ParentName="FactionBase">
+    <defName>ColonyCode_RemoteWorkers</defName>
+    <label>remote workers</label>
+    <description>Remote workers who live at your agent desks and embody your Claude Code agents.</description>
+    <pawnSingular>remote worker</pawnSingular>
+    <pawnsPlural>remote workers</pawnsPlural>
+    <fixedName>Remote Workers</fixedName>
+    <categoryTag>ColonyCode</categoryTag>
+    <requiredCountAtGameStart>1</requiredCountAtGameStart>
+    <maxConfigurableAtWorldCreation>1</maxConfigurableAtWorldCreation>
+    <maxCountAtGameStart>1</maxCountAtGameStart>
+    <displayInFactionSelection>false</displayInFactionSelection>
+    <canMakeRandomly>false</canMakeRandomly>
+    <hidden>true</hidden>
+    <humanlikeFaction>true</humanlikeFaction>
+    <techLevel>Industrial</techLevel>
+    <basicMemberKind>ColonyCode_RemoteWorker</basicMemberKind>
+    <factionIconPath>World/WorldObjects/Expanding/Sites/DownedRefugee</factionIconPath>
+    <colorSpectrum>
+      <li>(0.35, 0.65, 1.0)</li>
+    </colorSpectrum>
+    <backstoryFilters>
+      <li>
+        <categories>
+          <li>Offworld</li>
+        </categories>
+      </li>
+    </backstoryFilters>
+    <settlementGenerationWeight>0</settlementGenerationWeight>
+    <rescueesCanJoin>false</rescueesCanJoin>
+    <autoFlee>false</autoFlee>
+    <canSiege>false</canSiege>
+    <canStageAttacks>false</canStageAttacks>
+    <canPsychicRitualSiege>false</canPsychicRitualSiege>
+    <raidsForbidden>true</raidsForbidden>
+    <raidCommonalityFromPointsCurve>
+      <points>
+        <li>(0, 0)</li>
+      </points>
+    </raidCommonalityFromPointsCurve>
+    <canRequestTraders>false</canRequestTraders>
+    <canRequestMilitaryAid>false</canRequestMilitaryAid>
+    <canRequestOrbitalTrader>false</canRequestOrbitalTrader>
+    <canGenerateQuestSites>false</canGenerateQuestSites>
+    <mustStartOneEnemy>false</mustStartOneEnemy>
+    <naturalEnemy>false</naturalEnemy>
+    <permanentEnemy>false</permanentEnemy>
+  </FactionDef>
+
+</Defs>

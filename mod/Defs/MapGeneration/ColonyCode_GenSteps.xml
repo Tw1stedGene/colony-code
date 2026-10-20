@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Starting remote office (ColonyCode.World.GenStep_RemoteOffice). Added to Base_Player by
+       Patches/ColonyCode_RemoteOffice.xml. Order 1000: after FindPlayerStartSpot (850), ScenParts
+       (875, arrival pods and starting items), Plants (900), SteamGeysers (950) and RockChunks (970),
+       so the site check sees everything already on the ground; before Snow (1150), Animals (1200) and
+       Fog (1500). Only acts on the starting map of a new game. -->
+  <GenStepDef>
+    <defName>ColonyCode_RemoteOffice</defName>
+    <order>1000</order>
+    <genStep Class="ColonyCode.World.GenStep_RemoteOffice" />
+  </GenStepDef>
+
+</Defs>

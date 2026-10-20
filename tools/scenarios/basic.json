@@ -1,0 +1,1674 @@
+{
+  "name": "basic",
+  "description": "Lead adds due dates to a todo app: reads, edits with a diff, spawns a test worker, asks permission for npm install, finishes the goal, then works on a task the player added from the game. The board shows the goal card, the subagent card under it, the game task card, and Claude's own task list (4 tasks).",
+  "vars": {
+    "cwd": "/Users/dev/projects/todo-app",
+    "repo": "todo-app",
+    "branch": "feature/due-dates",
+    "model": "claude-opus-4-5",
+    "worker": "a3f9c2e1b7d40001",
+    "goal": "goal-{{run}}",
+    "perm": "perm-toolu_{{run}}_npm",
+    "ask": "ask-toolu_{{run}}_views-0",
+    "gameTask": "game-replay-{{run}}"
+  },
+  "steps": [
+    {
+      "label": "session start",
+      "once": true,
+      "events": [
+        {
+          "type": "session.start",
+          "cwd": "{{cwd}}",
+          "repo": "{{repo}}",
+          "branch": "{{branch}}",
+          "model": "{{model}}",
+          "label": "{{repo}}"
+        },
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "idle",
+            "activity": "clocked in",
+            "station": "lounge"
+          }
+        },
+        {
+          "type": "worktree.list",
+          "base": "{{branch}}",
+          "dirty": false,
+          "worktrees": [
+            {
+              "id": "todo-app-docs",
+              "path": "/Users/dev/projects/todo-app-docs",
+              "branch": "docs/readme-refresh",
+              "ahead": 2,
+              "files": 1,
+              "additions": 18,
+              "deletions": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "goal arrives, lead thinks",
+      "delay": 1500,
+      "events": [
+        {
+          "type": "goal.upsert",
+          "goal": {
+            "id": "{{goal}}",
+            "text": "Add due dates to todos and show overdue items in red",
+            "status": "active",
+            "progress": 0
+          }
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "blockedBy": [
+                "3"
+              ],
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "doing",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            }
+          ]
+        },
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "thinking",
+            "activity": "planning the change",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "text",
+              "text": "I'll look at the Todo model and the list renderer first, then add a dueDate field."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "reading src/model/todo.ts",
+      "delay": 2500,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "reading",
+            "activity": "reading src/model/todo.ts",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "doing",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "blockedBy": [
+                "3"
+              ],
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "doing",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            }
+          ]
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Read src/model/todo.ts"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "delay": 1200,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "result",
+              "text": "42 lines: export interface Todo { id: string; title: string; done: boolean }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "grep for renderers",
+      "delay": 1500,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "reading",
+            "activity": "searching \"renderTodo\"",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Grep \"renderTodo\" in src/"
+            },
+            {
+              "kind": "result",
+              "text": "src/ui/list.ts:18\nsrc/ui/list.ts:57"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "delay": 1800,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "reading",
+            "activity": "reading src/ui/list.ts",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Read src/ui/list.ts"
+            },
+            {
+              "kind": "result",
+              "text": "88 lines"
+            }
+          ]
+        },
+        {
+          "type": "agent.say",
+          "agentId": "{{lead}}",
+          "text": "Found the model. Adding dueDate."
+        }
+      ]
+    },
+    {
+      "label": "editing the model (diff)",
+      "delay": 2500,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "editing",
+            "activity": "editing src/model/todo.ts",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Edit src/model/todo.ts"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "delay": 1500,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "diff",
+              "text": "--- a/src/model/todo.ts\n+++ b/src/model/todo.ts\n@@ -1,5 +1,10 @@\n export interface Todo {\n   id: string;\n   title: string;\n   done: boolean;\n+  dueDate?: string; // ISO date, e.g. 2026-10-31\n }\n+\n+export function isOverdue(todo: Todo, now = new Date()): boolean {\n+  return !todo.done && !!todo.dueDate && new Date(todo.dueDate) < now;\n+}"
+            }
+          ]
+        },
+        {
+          "type": "goal.upsert",
+          "goal": {
+            "id": "{{goal}}",
+            "text": "Add due dates to todos and show overdue items in red",
+            "status": "active",
+            "progress": 0.25
+          }
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "blockedBy": [
+                "3"
+              ],
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "doing",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "editing the renderer (diff)",
+      "delay": 2200,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "editing",
+            "activity": "editing src/ui/list.ts",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "doing",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "blockedBy": [
+                "3"
+              ],
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "doing",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            }
+          ]
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Edit src/ui/list.ts"
+            },
+            {
+              "kind": "diff",
+              "text": "--- a/src/ui/list.ts\n+++ b/src/ui/list.ts\n@@ -55,7 +55,9 @@ export function renderList(todos: Todo[]) {\n   for (const todo of todos) {\n-    out.push(renderTodo(todo));\n+    const line = renderTodo(todo);\n+    const due = todo.dueDate ? ` (due ${todo.dueDate})` : '';\n+    out.push(isOverdue(todo) ? red(line + due) : line + due);\n   }\n   return out.join('\\n');\n }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "worker spawns to run tests",
+      "delay": 2000,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Task: run the test suite and report failures (subagent test-runner)"
+            }
+          ]
+        },
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "thinking",
+            "activity": "waiting for test-runner",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{worker}}",
+            "role": "worker",
+            "label": "test-runner",
+            "state": "thinking",
+            "activity": "starting up",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "doing",
+              "agentId": "{{lead}}",
+              "owner": "test-runner",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "blockedBy": [
+                "3"
+              ],
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "doing",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            },
+            {
+              "id": "agent-{{worker}}",
+              "subject": "Run the test suite",
+              "status": "doing",
+              "source": "agent",
+              "owner": "test-runner",
+              "agentId": "{{worker}}",
+              "parent": "{{goal}}",
+              "description": "Run npm test and report any failures with file and line."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "delay": 2000,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{worker}}",
+            "role": "worker",
+            "label": "test-runner",
+            "state": "testing",
+            "activity": "running npm test",
+            "station": "terminal"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{worker}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Bash: npm test"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "delay": 3500,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{worker}}",
+          "entries": [
+            {
+              "kind": "result",
+              "text": "PASS test/model.test.ts (4 tests)\nFAIL test/list.test.ts\n  x renders overdue todos in red\n    expected '\\u001b[31mBuy milk (due 2020-01-01)\\u001b[39m'\nTests: 1 failed, 11 passed, 12 total"
+            }
+          ]
+        },
+        {
+          "type": "agent.say",
+          "agentId": "{{worker}}",
+          "text": "One test fails: list snapshot."
+        }
+      ]
+    },
+    {
+      "delay": 1500,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{worker}}",
+            "role": "worker",
+            "label": "test-runner",
+            "state": "done",
+            "activity": "reported 1 failing test",
+            "station": "terminal"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{worker}}",
+          "entries": [
+            {
+              "kind": "text",
+              "text": "1 failure in test/list.test.ts: the snapshot predates the due-date suffix."
+            }
+          ]
+        },
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "thinking",
+            "activity": "reading test report",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "goal.upsert",
+          "goal": {
+            "id": "{{goal}}",
+            "text": "Add due dates to todos and show overdue items in red",
+            "status": "active",
+            "progress": 0.5
+          }
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "done",
+              "agentId": "{{worker}}",
+              "owner": "test-runner",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "doing",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            },
+            {
+              "id": "agent-{{worker}}",
+              "subject": "Run the test suite",
+              "status": "done",
+              "source": "agent",
+              "owner": "test-runner",
+              "agentId": "{{worker}}",
+              "parent": "{{goal}}",
+              "description": "Run npm test and report any failures with file and line."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "worker heads to the lounge",
+      "delay": 2000,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{worker}}",
+            "role": "worker",
+            "label": "test-runner",
+            "state": "idle",
+            "activity": "",
+            "station": "lounge"
+          }
+        },
+        {
+          "type": "usage.update",
+          "inputTokens": 18240,
+          "outputTokens": 2310,
+          "cacheReadTokens": 96400,
+          "turns": 1
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "done",
+              "agentId": "{{worker}}",
+              "owner": "test-runner",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "todo",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "doing",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            },
+            {
+              "id": "agent-{{worker}}",
+              "subject": "Run the test suite",
+              "status": "done",
+              "source": "agent",
+              "owner": "test-runner",
+              "agentId": "{{worker}}",
+              "parent": "{{goal}}",
+              "description": "Run npm test and report any failures with file and line."
+            },
+            {
+              "id": "{{gameTask}}",
+              "subject": "Write a CHANGELOG entry for due dates",
+              "status": "todo",
+              "source": "game"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "permission: npm install date-fns",
+      "delay": 1500,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "text",
+              "text": "Date parsing is fragile across time zones. I'd like to add date-fns."
+            }
+          ]
+        },
+        {
+          "type": "decision.open",
+          "decision": {
+            "id": "{{perm}}",
+            "agentId": "{{lead}}",
+            "kind": "permission",
+            "question": "Run: npm install date-fns",
+            "options": [
+              "Allow once",
+              "Always allow",
+              "Deny"
+            ],
+            "context": {
+              "tool": "Bash",
+              "input": {
+                "command": "npm install date-fns",
+                "description": "Add date-fns for due date parsing"
+              },
+              "Always allow covers": "allow Bash(npm install:*) for this project (your local settings)"
+            }
+          }
+        },
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "waiting_user",
+            "activity": "needs you: npm install date-fns",
+            "station": "user"
+          }
+        }
+      ]
+    },
+    {
+      "label": "waiting for the player to answer",
+      "await": "{{perm}}"
+    },
+    {
+      "label": "allowed: installing",
+      "if": "allowed",
+      "delay": 500,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "running",
+            "activity": "running npm install date-fns",
+            "station": "terminal"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Bash: npm install date-fns"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "always allowed: rule saved",
+      "if": "always",
+      "delay": 200,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "text",
+              "text": "Saved: Bash(npm install:*) is always allowed in this project (local settings)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "if": "allowed",
+      "delay": 2500,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "result",
+              "text": "added 1 package, and audited 214 packages in 2s\nfound 0 vulnerabilities"
+            }
+          ]
+        },
+        {
+          "type": "agent.say",
+          "agentId": "{{lead}}",
+          "text": "Thanks! date-fns is in."
+        }
+      ]
+    },
+    {
+      "label": "denied: hand-rolled helper",
+      "if": "denied",
+      "delay": 500,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "error",
+              "text": "Permission denied: {{answerText}}"
+            }
+          ]
+        },
+        {
+          "type": "agent.say",
+          "agentId": "{{lead}}",
+          "text": "Fine, I'll parse dates myself."
+        },
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "thinking",
+            "activity": "working without date-fns",
+            "station": "desk"
+          }
+        }
+      ]
+    },
+    {
+      "label": "question: which views show due dates (multiSelect)",
+      "delay": 1500,
+      "events": [
+        {
+          "type": "decision.open",
+          "decision": {
+            "id": "{{ask}}",
+            "agentId": "{{lead}}",
+            "kind": "question",
+            "question": "Which views should show due dates?",
+            "options": [
+              "List",
+              "Calendar",
+              "Export"
+            ],
+            "context": "Views\n- List: The main todo list\n- Calendar: The month view\n- Export: The CSV export",
+            "multiSelect": true,
+            "allowText": true
+          }
+        },
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "waiting_user",
+            "activity": "asks: which views show due dates?",
+            "station": "user"
+          }
+        }
+      ]
+    },
+    {
+      "label": "waiting for the player to answer the question",
+      "await": "{{ask}}"
+    },
+    {
+      "label": "question answered",
+      "delay": 500,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "AskUserQuestion: Which views should show due dates?"
+            },
+            {
+              "kind": "result",
+              "text": "Which views should show due dates? → {{answerOption}}"
+            }
+          ]
+        },
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "thinking",
+            "activity": "planning the views",
+            "station": "desk"
+          }
+        }
+      ]
+    },
+    {
+      "label": "fixing the snapshot",
+      "delay": 2000,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "editing",
+            "activity": "editing test/list.test.ts",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Edit test/list.test.ts"
+            },
+            {
+              "kind": "diff",
+              "text": "--- a/test/list.test.ts\n+++ b/test/list.test.ts\n@@ -30,3 +30,3 @@\n-  expect(out).toBe('Buy milk');\n+  expect(out).toBe(red('Buy milk (due 2020-01-01)'));"
+            }
+          ]
+        },
+        {
+          "type": "goal.upsert",
+          "goal": {
+            "id": "{{goal}}",
+            "text": "Add due dates to todos and show overdue items in red",
+            "status": "active",
+            "progress": 0.75
+          }
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "done",
+              "agentId": "{{worker}}",
+              "owner": "test-runner",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "doing",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "doing",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            },
+            {
+              "id": "agent-{{worker}}",
+              "subject": "Run the test suite",
+              "status": "done",
+              "source": "agent",
+              "owner": "test-runner",
+              "agentId": "{{worker}}",
+              "parent": "{{goal}}",
+              "description": "Run npm test and report any failures with file and line."
+            },
+            {
+              "id": "{{gameTask}}",
+              "subject": "Write a CHANGELOG entry for due dates",
+              "status": "todo",
+              "source": "game"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "lead runs the tests",
+      "delay": 2000,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "testing",
+            "activity": "running npm test",
+            "station": "terminal"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Bash: npm test"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "delay": 3000,
+      "events": [
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "result",
+              "text": "Tests: 12 passed, 12 total"
+            }
+          ]
+        },
+        {
+          "type": "agent.say",
+          "agentId": "{{lead}}",
+          "text": "All green."
+        }
+      ]
+    },
+    {
+      "label": "goal done",
+      "delay": 1500,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "done",
+            "activity": "finished: due dates",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "text",
+              "text": "Done. Todos have an optional dueDate; overdue items render in red. 3 files changed, tests pass."
+            }
+          ]
+        },
+        {
+          "type": "goal.upsert",
+          "goal": {
+            "id": "{{goal}}",
+            "text": "Add due dates to todos and show overdue items in red",
+            "status": "done",
+            "progress": 1,
+            "summary": "Added Todo.dueDate and isOverdue(); list shows due dates, overdue in red. 3 files changed, 12/12 tests pass."
+          }
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "done",
+              "agentId": "{{worker}}",
+              "owner": "test-runner",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "done",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            },
+            {
+              "id": "agent-{{worker}}",
+              "subject": "Run the test suite",
+              "status": "done",
+              "source": "agent",
+              "owner": "test-runner",
+              "agentId": "{{worker}}",
+              "parent": "{{goal}}",
+              "description": "Run npm test and report any failures with file and line."
+            },
+            {
+              "id": "{{gameTask}}",
+              "subject": "Write a CHANGELOG entry for due dates",
+              "status": "doing",
+              "source": "game",
+              "agentId": "{{lead}}"
+            }
+          ]
+        },
+        {
+          "type": "usage.update",
+          "inputTokens": 31877,
+          "outputTokens": 5102,
+          "cacheReadTokens": 214900,
+          "turns": 2
+        },
+        {
+          "type": "worktree.list",
+          "base": "{{branch}}",
+          "dirty": false,
+          "worktrees": [
+            {
+              "id": "agent-a3f9c2e1b7d40001",
+              "path": "{{cwd}}/.claude/worktrees/agent-a3f9c2e1b7d40001",
+              "branch": "claude/agent-a3f9c2e1b7d40001",
+              "ahead": 2,
+              "files": 3,
+              "additions": 41,
+              "deletions": 6,
+              "agentId": "{{worker}}"
+            },
+            {
+              "id": "todo-app-docs",
+              "path": "/Users/dev/projects/todo-app-docs",
+              "branch": "docs/readme-refresh",
+              "ahead": 2,
+              "files": 1,
+              "additions": 18,
+              "deletions": 4
+            }
+          ]
+        },
+        {
+          "type": "diff.result",
+          "requestId": "replay-diff-{{run}}",
+          "worktree": "agent-a3f9c2e1b7d40001",
+          "files": [
+            {
+              "path": "src/model/todo.ts",
+              "status": "modified",
+              "hunks": [
+                {
+                  "header": "@@ -1,5 +1,10 @@ export type Todo = {",
+                  "lines": [
+                    {
+                      "kind": "ctx",
+                      "text": "export type Todo = {",
+                      "oldNo": 1,
+                      "newNo": 1
+                    },
+                    {
+                      "kind": "ctx",
+                      "text": "  id: string",
+                      "oldNo": 2,
+                      "newNo": 2
+                    },
+                    {
+                      "kind": "ctx",
+                      "text": "  title: string",
+                      "oldNo": 3,
+                      "newNo": 3
+                    },
+                    {
+                      "kind": "add",
+                      "text": "  dueDate?: string",
+                      "newNo": 4
+                    },
+                    {
+                      "kind": "ctx",
+                      "text": "  done: boolean",
+                      "oldNo": 4,
+                      "newNo": 5
+                    },
+                    {
+                      "kind": "ctx",
+                      "text": "}",
+                      "oldNo": 5,
+                      "newNo": 6
+                    },
+                    {
+                      "kind": "add",
+                      "text": "",
+                      "newNo": 7
+                    },
+                    {
+                      "kind": "add",
+                      "text": "export const isOverdue = (t: Todo, now = new Date()) =>",
+                      "newNo": 8
+                    },
+                    {
+                      "kind": "add",
+                      "text": "  !t.done && t.dueDate !== undefined && new Date(t.dueDate) < now",
+                      "newNo": 9
+                    },
+                    {
+                      "kind": "add",
+                      "text": "",
+                      "newNo": 10
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "path": "src/ui/list.ts",
+              "status": "modified",
+              "hunks": [
+                {
+                  "header": "@@ -8,3 +8,4 @@ export function render(todos: Todo[]) {",
+                  "lines": [
+                    {
+                      "kind": "del",
+                      "text": "    lines.push(`${mark} ${t.title}`)",
+                      "oldNo": 8
+                    },
+                    {
+                      "kind": "add",
+                      "text": "    const due = t.dueDate ? ` (due ${t.dueDate})` : ''",
+                      "newNo": 8
+                    },
+                    {
+                      "kind": "add",
+                      "text": "    lines.push(color(isOverdue(t) ? 'red' : 'default', `${mark} ${t.title}${due}`))",
+                      "newNo": 9
+                    },
+                    {
+                      "kind": "ctx",
+                      "text": "  }",
+                      "oldNo": 9,
+                      "newNo": 10
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "path": "test/overdue.test.ts",
+              "status": "added",
+              "hunks": [
+                {
+                  "header": "@@ -0,0 +1,2 @@",
+                  "lines": [
+                    {
+                      "kind": "add",
+                      "text": "import { isOverdue } from '../src/model/todo'",
+                      "newNo": 1
+                    },
+                    {
+                      "kind": "add",
+                      "text": "test('past due', () => expect(isOverdue({ id: '1', title: 'x', done: false, dueDate: '2000-01-01' })).toBe(true))",
+                      "newNo": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "lead works on the task from the game",
+      "delay": 1500,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "editing",
+            "activity": "editing CHANGELOG.md",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "tool",
+              "text": "Edit: CHANGELOG.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "game task done",
+      "delay": 2000,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "done",
+            "activity": "finished: changelog",
+            "station": "desk"
+          }
+        },
+        {
+          "type": "agent.log",
+          "agentId": "{{lead}}",
+          "entries": [
+            {
+              "kind": "text",
+              "text": "Added a \"Due dates\" entry to CHANGELOG.md."
+            }
+          ]
+        },
+        {
+          "type": "task.snapshot",
+          "tasks": [
+            {
+              "id": "1",
+              "subject": "Add dueDate to the Todo model",
+              "description": "Optional ISO date field plus an isOverdue() helper in src/model/todo.ts.",
+              "activeForm": "Adding dueDate to the model",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "2",
+              "subject": "Show due dates and overdue items in red",
+              "description": "Append the due date in src/ui/list.ts and render overdue todos in red.",
+              "activeForm": "Rendering due dates",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "3",
+              "subject": "Run the test suite",
+              "description": "Run npm test in a test-runner subagent and report failures.",
+              "activeForm": "Running the tests",
+              "status": "done",
+              "agentId": "{{worker}}",
+              "owner": "test-runner",
+              "source": "claude"
+            },
+            {
+              "id": "4",
+              "subject": "Fix failing tests",
+              "description": "Update tests and snapshots that predate the due-date suffix.",
+              "activeForm": "Fixing tests",
+              "status": "done",
+              "agentId": "{{lead}}",
+              "source": "claude"
+            },
+            {
+              "id": "{{goal}}",
+              "subject": "Add due dates to todos and show overdue items in red",
+              "status": "done",
+              "source": "goal",
+              "agentId": "{{lead}}"
+            },
+            {
+              "id": "agent-{{worker}}",
+              "subject": "Run the test suite",
+              "status": "done",
+              "source": "agent",
+              "owner": "test-runner",
+              "agentId": "{{worker}}",
+              "parent": "{{goal}}",
+              "description": "Run npm test and report any failures with file and line."
+            },
+            {
+              "id": "{{gameTask}}",
+              "subject": "Write a CHANGELOG entry for due dates",
+              "status": "done",
+              "source": "game",
+              "agentId": "{{lead}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "lead goes idle",
+      "delay": 10000,
+      "events": [
+        {
+          "type": "agent.upsert",
+          "agent": {
+            "id": "{{lead}}",
+            "role": "lead",
+            "label": "Lead",
+            "state": "idle",
+            "activity": "",
+            "station": "lounge"
+          }
+        }
+      ]
+    },
+    {
+      "label": "session end",
+      "final": true,
+      "events": [
+        {
+          "type": "session.end"
+        }
+      ]
+    }
+  ],
+  "respond": {
+    "diff.request": [
+      {
+        "type": "diff.result",
+        "requestId": "{{requestId}}",
+        "worktree": "{{worktree}}",
+        "files": [
+          {
+            "path": "src/model/todo.ts",
+            "status": "modified",
+            "hunks": [
+              {
+                "header": "@@ -3,3 +3,4 @@",
+                "lines": [
+                  {
+                    "kind": "ctx",
+                    "text": "  title: string",
+                    "oldNo": 3,
+                    "newNo": 3
+                  },
+                  {
+                    "kind": "add",
+                    "text": "  dueDate?: string",
+                    "newNo": 4
+                  },
+                  {
+                    "kind": "ctx",
+                    "text": "  done: boolean",
+                    "oldNo": 4,
+                    "newNo": 5
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "merge.request": [
+      {
+        "type": "merge.result",
+        "requestId": "{{requestId}}",
+        "worktree": "{{worktree}}",
+        "action": "{{action}}",
+        "ok": true,
+        "message": "Replay: {{action}} on {{worktree}} (nothing really changed)."
+      },
+      {
+        "type": "worktree.list",
+        "base": "{{branch}}",
+        "dirty": false,
+        "worktrees": [
+          {
+            "id": "todo-app-docs",
+            "path": "/Users/dev/projects/todo-app-docs",
+            "branch": "docs/readme-refresh",
+            "ahead": 2,
+            "files": 1,
+            "additions": 18,
+            "deletions": 4
+          }
+        ]
+      }
+    ]
+  }
+}

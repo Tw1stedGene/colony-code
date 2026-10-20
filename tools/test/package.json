@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "description": "Lets `node --test tools/test` run the whole suite (index.js imports every *.test.mjs)."
+}

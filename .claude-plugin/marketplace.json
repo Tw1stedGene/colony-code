@@ -1,0 +1,14 @@
+{
+  "name": "colony-code",
+  "owner": {
+    "name": "Tw1stedGene"
+  },
+  "description": "Colony Code: Claude Code agents as remote workers in your RimWorld colony.",
+  "plugins": [
+    {
+      "name": "colony-code",
+      "source": "./plugin",
+      "description": "Shows this Claude Code session and its subagents as remote workers in your RimWorld colony (needs the Colony Code mod running in the game)."
+    }
+  ]
+}

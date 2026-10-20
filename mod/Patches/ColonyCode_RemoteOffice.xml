@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+
+  <!-- Starting remote office: run GenStep ColonyCode_RemoteOffice on player home maps. The step itself
+       only builds on the starting map of a new game, with the mod setting on and an industrial start. -->
+  <Operation Class="PatchOperationAdd">
+    <xpath>Defs/MapGeneratorDef[defName="Base_Player"]/genSteps</xpath>
+    <value>
+      <li>ColonyCode_RemoteOffice</li>
+    </value>
+  </Operation>
+
+</Patch>

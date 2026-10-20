@@ -1,0 +1,10 @@
+{
+  "name": "colony-code",
+  "version": "0.2.0",
+  "author": {
+    "name": "Tw1stedGene"
+  },
+  "description": "Shows this Claude Code session and its subagents as remote workers in your RimWorld colony (needs the Colony Code mod running in the game).",
+  "license": "MIT",
+  "repository": "https://github.com/Tw1stedGene/colony-code"
+}

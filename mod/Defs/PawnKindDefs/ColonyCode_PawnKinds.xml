@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- An unarmed adult in simple clothes. Spawned only by the mod, one per powered agent desk. -->
+  <PawnKindDef>
+    <defName>ColonyCode_RemoteWorker</defName>
+    <label>remote worker</label>
+    <labelPlural>remote workers</labelPlural>
+    <race>Human</race>
+    <defaultFactionDef>ColonyCode_RemoteWorkers</defaultFactionDef>
+    <combatPower>30</combatPower>
+    <isFighter>false</isFighter>
+    <minGenerationAge>20</minGenerationAge>
+    <maxGenerationAge>55</maxGenerationAge>
+    <allowOldAgeInjuries>false</allowOldAgeInjuries>
+    <generateInitialNonFamilyRelations>false</generateInitialNonFamilyRelations>
+    <apparelTags>
+      <li>IndustrialBasic</li>
+    </apparelTags>
+    <apparelMoney>300~500</apparelMoney>
+    <apparelAllowHeadgearChance>0</apparelAllowHeadgearChance>
+    <apparelIgnoreSeasons>true</apparelIgnoreSeasons>
+    <forceNormalGearQuality>true</forceNormalGearQuality>
+    <weaponMoney>0~0</weaponMoney>
+    <techHediffsChance>0</techHediffsChance>
+    <chemicalAddictionChance>0</chemicalAddictionChance>
+    <combatEnhancingDrugsChance>0</combatEnhancingDrugsChance>
+    <invNutrition>0</invNutrition>
+    <royalTitleChance>0</royalTitleChance>
+    <humanPregnancyChance>0</humanPregnancyChance>
+    <canBeSapper>false</canBeSapper>
+    <initialWillRange>1~3</initialWillRange>
+    <initialResistanceRange>10~18</initialResistanceRange>
+    <appearsRandomlyInCombatGroups>false</appearsRandomlyInCombatGroups>
+    <showInDebugSpawner>false</showInDebugSpawner>
+  </PawnKindDef>
+
+</Defs>
