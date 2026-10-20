@@ -50,7 +50,14 @@ namespace ColonyCode.Dev
                     Log.Error("[ColonyCodeTest] setup failed: " + ex);
                 }
             }
-            if (done) TakeShotIfDue();
+            if (!done) return;
+            var reg = AgentRegistry.Instance;
+            if (ShowcaseDirector.Enabled)
+            {
+                if (reg != null && reg.OfficeState == RemoteOfficeState.Built) ShowcaseDirector.Update(map, reg.OfficeRect);
+                return;
+            }
+            TakeShotIfDue();
         }
 
         // Screenshots go to ~/.colony-code/shots/shot_NN.png (cycling), so a test run can be inspected

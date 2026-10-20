@@ -474,6 +474,8 @@ namespace ColonyCode.Agents
             };
             d.sessionId = !string.IsNullOrEmpty(session) ? session : Get(d.agentId)?.sessionId;
             d.covers = ExtractCovers(d.context);
+            // Every view shows the "Always allow covers:" line on its own, so keep it out of the context.
+            if (!string.IsNullOrEmpty(d.covers) && d.context != null) d.context = d.context.Replace(d.covers, "").TrimEnd();
             var opts = Json.GetList(obj, "options");
             if (opts != null) foreach (var o in opts) if (o is string s) d.options.Add(s);
             Bridge.RegisterDecision(id);

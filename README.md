@@ -11,19 +11,46 @@ code without leaving the game.
 
 ## Features
 
-- **A remote office from day one.** A new colony starts with a small, powered office and two remote
-  workers, Marlow and Juniper, already at their desks.
-- **Remote workers.** Friendly residents who live in your colony for good. They need no food or
-  sleep, and they don't take orders. Each powered agent desk you build brings one more.
-- **See the real work.** Workers type, read and run tests at their desks, the monitor glows by
-  state, and a status line above each worker says what their agent is doing.
-- **Decisions as letters.** When Claude asks you something, a letter arrives and the worker waits at
-  the decision terminal until you answer.
-- **Task board.** To do, In progress and Done columns that fill up as you and Claude work.
-- **Code review.** Look at the changes and choose Merge, Request changes or Reject.
-- **Console.** Press `\` to give Claude a goal or message one of your agents.
-- **And more:** agent cards, a journal of finished goals, token usage, and a small celebration
-  whenever a goal ships.
+### A remote office from day one
+A new colony starts with a small, powered office and two remote workers, Marlow and Juniper,
+already at their desks. They're friendly residents who live in your colony for good: they need no
+food or sleep, and they don't take orders. Each powered agent desk you build brings one more.
+
+![The remote office: Marlow codes at a desk while Juniper waits for work](.github/screenshots/office.jpg)
+
+### See the real work
+Workers type, read and run tests at their desks, the monitor glows by state, and a status line
+above each worker says what their agent is doing. Select a desk and open its **Monitor** tab to
+follow the live log.
+
+![An agent desk with its Monitor tab showing the live log](.github/screenshots/workstation-monitor.jpg)
+
+### Decisions as letters
+When Claude asks you something, a letter arrives and the worker walks to the decision terminal and
+waits until you answer.
+
+![Agents waiting for you: a permission request with Allow once, Always allow and Deny](.github/screenshots/decision.jpg)
+
+### Task board
+To do, In progress and Done columns that fill up as you and Claude work: your goals, Claude's
+helpers (subagents) and tasks you add from the game.
+
+![The task board with goal, subagent, game and Claude task cards](.github/screenshots/task-board.jpg)
+
+### Agent cards
+Everything about one agent: what it's doing, its current task, the last log lines with changes
+highlighted, and buttons to message it, stop it, or review its work.
+
+![An agent card with the live log and a highlighted diff](.github/screenshots/agent-card.jpg)
+
+### Code review
+Look at the changes and choose Merge, Request changes or Reject.
+
+![The review window with worktrees and a diff](.github/screenshots/code-review.jpg)
+
+### And more
+- **Console:** press `\` to give Claude a goal or message one of your agents.
+- A journal of finished goals, token usage, and a small celebration whenever a goal ships.
 
 ## Install
 
