@@ -58,7 +58,7 @@ You need **RimWorld 1.6 or 1.7** and **[Claude Code](https://claude.com/claude-c
 your own account. All usage counts against your own plan. Biotech is optional, and no other mods are
 needed.
 
-1. **Get the mod.** Subscribe on the Steam Workshop, or download the mod zip from
+1. **Get the mod.** Subscribe on the [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3823738603), or download the mod zip from
    [Releases](https://github.com/Tw1stedGene/colony-code/releases) and unzip it into your RimWorld
    `Mods` folder.
 2. **Enable it.** In RimWorld, open **Mods**, turn on **Colony Code**, and restart when asked.
