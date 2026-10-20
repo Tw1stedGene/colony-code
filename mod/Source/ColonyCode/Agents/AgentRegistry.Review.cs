@@ -223,7 +223,7 @@ namespace ColonyCode.Agents
                     s.worktrees.Add(new WorktreeInfo
                     {
                         id = id,
-                        path = Json.GetString(d, "path"),
+                        path = Privacy.Path(Json.GetString(d, "path")),
                         branch = Json.GetString(d, "branch") ?? id,
                         ahead = (int)Json.GetLong(d, "ahead"),
                         files = (int)Json.GetLong(d, "files"),

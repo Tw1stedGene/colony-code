@@ -1,5 +1,7 @@
 # Colony Code
 
+![Colony Code: remote workers coding in their office](.github/preview.png)
+
 **Your Claude Code agents, living in your RimWorld colony.** Powered by Claude.
 
 Colony Code turns the Claude Code sessions you run on your own computer into remote workers in your

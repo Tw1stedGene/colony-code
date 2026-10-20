@@ -34,6 +34,9 @@ import {
   questionContext,
   randomHex,
   resultSnippet,
+  isPersonalFolder,
+  privatePath,
+  scrubHome,
   sessionLabel,
   summarizeSuggestions,
   stateForTool,
@@ -75,6 +78,8 @@ let branch: string | undefined
 let model: string | undefined
 let label = ''
 let homeDir: string | undefined
+/** The player's home folder (HOME / USERPROFILE): never shown in the game, see scrubHome. */
+let userHome: string | undefined
 /** The folder holding bridge.json: $COLONY_HOME, else $HOME/.colony-code. */
 let colonyDir: string | undefined
 
@@ -279,7 +284,7 @@ function flush($: Engine): Promise<void> {
         return
       }
       const batch = buffer.splice(0, BATCH_MAX)
-      const res = await request($, 'POST', '/events', JSON.stringify(batch), POST_TIMEOUT_MS)
+      const res = await request($, 'POST', '/events', scrubHome(JSON.stringify(batch), userHome), POST_TIMEOUT_MS)
       if (res === undefined) {
         lost($)
         return
@@ -568,13 +573,13 @@ async function hello($: Engine): Promise<void> {
     agents.set(lead, {
       id: lead,
       role: 'lead',
-      label: repo === undefined ? 'Claude' : `Claude (${repo})`,
+      label: label === '' ? 'Claude' : `Claude (${label})`,
       state: 'idle',
       activity: 'idle',
       station: 'lounge',
     })
   }
-  const start: Ev = { type: 'session.start', ts: now(), sessionId, cwd }
+  const start: Ev = { type: 'session.start', ts: now(), sessionId, cwd: privatePath(cwd, userHome) }
   if (repo !== undefined) start.repo = repo
   if (label !== '') start.label = label
   if (branch !== undefined) start.branch = branch
@@ -592,7 +597,7 @@ async function hello($: Engine): Promise<void> {
     events.push({ type: 'usage.update', ts: now(), sessionId, ...usagePayload() })
   }
   const key = `${bridgeKey}|${sessionId}`
-  const res = await request($, 'POST', '/events', JSON.stringify(events), POST_TIMEOUT_MS)
+  const res = await request($, 'POST', '/events', scrubHome(JSON.stringify(events), userHome), POST_TIMEOUT_MS)
   if (res === undefined) {
     lost($)
     return
@@ -724,15 +729,27 @@ async function readSessionFacts($: Engine, startCwd: string): Promise<void> {
   } catch {
     sessionId = ''
   }
+  if (userHome === undefined) {
+    try {
+      userHome = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
+    } catch {
+      userHome = undefined
+    }
+  }
   let root = startCwd
+  let isRepo = false
   try {
     const r = await $.session.repo()
-    if (r !== null) root = r.root
+    if (r !== null) {
+      root = r.root
+      isRepo = true
+    }
   } catch {
     // not a repository
   }
-  repo = folderName(root)
-  label = sessionLabel(repo, startCwd)
+  // Only a repository's own folder names the session, and never the home folder (account name).
+  repo = isRepo && !isPersonalFolder(root, userHome) ? folderName(root) : undefined
+  label = sessionLabel(repo, startCwd, userHome)
   try {
     const head = await $.fs.read(`${root}/.git/HEAD`)
     branch = typeof head === 'string' ? branchFromHead(head) : undefined

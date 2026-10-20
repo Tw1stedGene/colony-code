@@ -365,12 +365,12 @@ namespace ColonyCode.Agents
             if (string.IsNullOrEmpty(id)) return;
             var a = Get(id);
             bool isNew = a == null;
-            if (isNew) a = CreateAgent(id, session, Json.GetString(obj, "role"), Json.GetString(obj, "label"));
+            if (isNew) a = CreateAgent(id, session, Json.GetString(obj, "role"), Privacy.Label(Json.GetString(obj, "label")));
             if (!string.IsNullOrEmpty(session)) a.sessionId = session;
             EnsureSession(a.sessionId);
             string role = Json.GetString(obj, "role");
             if (role == "lead" || role == "worker") a.role = role;
-            string label = Json.GetString(obj, "label");
+            string label = Privacy.Label(Json.GetString(obj, "label"));
             if (!string.IsNullOrEmpty(label) && label != a.label)
             {
                 a.label = label;

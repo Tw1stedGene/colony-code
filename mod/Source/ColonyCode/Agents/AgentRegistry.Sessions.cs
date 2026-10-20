@@ -129,7 +129,7 @@ namespace ColonyCode.Agents
             {
                 if (!string.IsNullOrEmpty(s.label)) return s.label;
                 if (!string.IsNullOrEmpty(s.repo)) return s.repo;
-                string seg = LastSegment(s.cwd);
+                string seg = Privacy.Label(LastSegment(s.cwd));
                 if (!string.IsNullOrEmpty(seg)) return seg;
             }
             return ShortId(id, 8);
@@ -162,9 +162,9 @@ namespace ColonyCode.Agents
             AbandonMerges(session);
             s.connected = true;
             s.endedTick = -1;
-            s.label = Clip(Json.GetString(ev, "label"), 40) ?? s.label;
-            s.cwd = Json.GetString(ev, "cwd") ?? s.cwd;
-            s.repo = Clip(Json.GetString(ev, "repo"), 60) ?? s.repo;
+            s.label = Clip(Privacy.Label(Json.GetString(ev, "label")), 40) ?? s.label;
+            s.cwd = Privacy.Path(Json.GetString(ev, "cwd")) ?? s.cwd;
+            s.repo = Clip(Privacy.Label(Json.GetString(ev, "repo")), 60) ?? s.repo;
             s.branch = Json.GetString(ev, "branch") ?? s.branch;
             s.model = Json.GetString(ev, "model") ?? s.model;
             RaiseSessionsChanged();

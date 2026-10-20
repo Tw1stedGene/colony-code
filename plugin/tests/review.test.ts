@@ -11,7 +11,7 @@ import {
   worktreeId,
 } from '../hooks/review'
 import type { Runner } from '../hooks/review'
-import { questionAnswer, questionContext, sessionLabel, summarizeSuggestions } from '../hooks/protocol'
+import { isPersonalFolder, privatePath, questionAnswer, questionContext, scrubHome, sessionLabel, summarizeSuggestions } from '../hooks/protocol'
 
 describe('review parsers', () => {
   test('worktree porcelain: branches, detached, bare, prunable', () => {
@@ -209,5 +209,26 @@ describe('v0.2 protocol helpers', () => {
   test('session label: repo folder, else the cwd', () => {
     expect(sessionLabel('todo-app', '/x/y')).toBe('todo-app')
     expect(sessionLabel(undefined, '/x/y/')).toBe('y')
+  })
+
+  test('privacy: the home folder never names a session or reaches the game', () => {
+    const home = '/Users/alice'
+    expect(sessionLabel(undefined, '/Users/alice', home)).toBe('')
+    expect(sessionLabel(undefined, '/Users/alice/', home)).toBe('')
+    expect(sessionLabel(undefined, '/home/bob')).toBe('')
+    expect(sessionLabel(undefined, 'C:\\Users\\carol')).toBe('')
+    expect(sessionLabel(undefined, '/Users/alice/projects/todo', home)).toBe('todo')
+    expect(isPersonalFolder('/Users', home)).toBe(true)
+    expect(isPersonalFolder('/', home)).toBe(true)
+    expect(isPersonalFolder('/Users/alice/dev', home)).toBe(false)
+    expect(privatePath('/Users/alice/dev/x.ts', home)).toBe('~/dev/x.ts')
+    expect(privatePath('/home/bob/a', undefined)).toBe('~/a')
+    expect(privatePath('/opt/app', home)).toBe('/opt/app')
+    const json = JSON.stringify([{ cwd: '/Users/alice/dev', text: 'Read /Users/alice/dev/a.ts and /home/bob/b', win: 'C:\\Users\\carol\\x' }])
+    const out = scrubHome(json, home)
+    expect(out.includes('alice')).toBe(false)
+    expect(out.includes('bob')).toBe(false)
+    expect(out.includes('carol')).toBe(false)
+    expect(JSON.parse(out)[0].cwd).toBe('~/dev')
   })
 })

@@ -460,8 +460,65 @@ export function questionAnswer(option: string, text: string | undefined): string
   return parts.length === 0 ? undefined : parts.join(', ')
 }
 
-/** `label` for session.start: the repo folder name, else the cwd's last segment. */
-export function sessionLabel(repo: string | undefined, cwd: string): string {
+// ---- privacy: never show the player's account name in the game ------------------------
+
+const HOME_PATTERNS = [/^\/Users\/[^/]+/, /^\/home\/[^/]+/, /^[A-Za-z]:[\\/]Users[\\/][^\\/]+/i]
+
+const trimSlashes = (p: string): string => p.replace(/[\\/]+$/, '')
+
+/**
+ * True for folders whose name is the account name or tells nothing: the home folder itself
+ * (`/Users/<name>`, `/home/<name>`, `C:\Users\<name>`, or `userHome`), its parents and the root.
+ */
+export function isPersonalFolder(path: string, userHome?: string): boolean {
+  const p = trimSlashes(path.trim())
+  if (p === '' || p === '~' || /^[A-Za-z]:$/.test(p)) return true
+  if (userHome !== undefined && userHome !== '') {
+    const h = trimSlashes(userHome)
+    if (p === h || h.startsWith(`${p}/`) || h.startsWith(`${p}\\`)) return true
+  }
+  if (/^(\/Users|\/home|[A-Za-z]:[\\/]Users)$/i.test(p)) return true
+  return HOME_PATTERNS.some(re => (re.exec(p)?.[0] ?? '') === p)
+}
+
+/** `path` with the home folder prefix shown as `~`, so it never carries the account name. */
+export function privatePath(path: string, userHome?: string): string {
+  if (userHome !== undefined && userHome !== '') {
+    const h = trimSlashes(userHome)
+    if (path === h) return '~'
+    if (path.startsWith(`${h}/`) || path.startsWith(`${h}\\`)) return `~${path.slice(h.length)}`
+  }
+  for (const re of HOME_PATTERNS) {
+    const m = re.exec(path)
+    if (m !== null) return `~${path.slice(m[0].length)}`
+  }
+  return path
+}
+
+/**
+ * The serialized event batch with every home-folder path replaced by `~`: logs, diffs, activity
+ * lines, permission questions and worktree paths never carry the account name to the game.
+ */
+export function scrubHome(json: string, userHome?: string): string {
+  let out = json
+  if (userHome !== undefined && userHome.length > 1) {
+    const h = trimSlashes(userHome)
+    // In JSON a backslash is escaped, so match both spellings of a Windows home.
+    for (const v of new Set([h, JSON.stringify(h).slice(1, -1)])) out = out.split(v).join('~')
+  }
+  return out
+    .replace(/\/Users\/[^/"\\\s]+/g, '~')
+    .replace(/\/home\/[^/"\\\s]+/g, '~')
+    .replace(/[A-Za-z]:(\\\\|\/)Users(\\\\|\/)[^\\/"\s]+/gi, '~')
+}
+
+/**
+ * `label` for session.start: the repository's folder name, else the cwd's last segment, but never
+ * a folder that is or names the player's home folder (that is the account name). '' when none.
+ */
+export function sessionLabel(repo: string | undefined, cwd: string, userHome?: string): string {
   const r = (repo ?? '').trim()
-  return r !== '' ? r : folderName(cwd)
+  if (r !== '') return r
+  if (isPersonalFolder(cwd, userHome)) return ''
+  return folderName(cwd)
 }
