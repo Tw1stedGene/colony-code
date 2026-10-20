@@ -12,7 +12,7 @@ namespace ColonyCode.Core
     /// </summary>
     public static class BridgeHost
     {
-        public const string FallbackModVersion = "0.1.0";
+        public const string FallbackModVersion = "0.2.0";
 
         private static readonly object gate = new object();
         private static BridgeServer server;
