@@ -40,7 +40,7 @@ namespace ColonyCode.UI
 
         // Translated tag labels and their widths (Tiny font), built once per active language.
         private static LoadedLanguage tagsFor;
-        private static string tagGoal, tagAgent, tagGame, tagClaude, tagWaiting, tagFailed, tagInterrupted;
+        private static string tagGoal, tagAgent, tagGame, tagClaude, tagWaiting, tagFailed, tagInterrupted, tagClickForDetails;
         private static float wGoal, wAgent, wGame, wClaude, wWaiting, wFailed, wInterrupted;
 
         private readonly Vector2[] scroll = new Vector2[3];
@@ -176,7 +176,7 @@ namespace ColonyCode.UI
         /// <summary>Subagent cards with a goal are indented under it.</summary>
         private static float Indent(TaskInfo t) => t.source == "agent" && !string.IsNullOrEmpty(t.parent) ? SubIndent : 0f;
 
-        private static void EnsureTags()
+        internal static void EnsureTags()
         {
             if (tagsFor == LanguageDatabase.activeLanguage && tagGoal != null) return;
             tagsFor = LanguageDatabase.activeLanguage;
@@ -187,6 +187,7 @@ namespace ColonyCode.UI
             tagWaiting = "ColonyCode_TaskSrcWaiting".Translate();
             tagFailed = "ColonyCode_TaskResultFailed".Translate();
             tagInterrupted = "ColonyCode_TaskResultInterrupted".Translate();
+            tagClickForDetails = "ColonyCode_TaskClickForDetails".Translate();
             var old = Text.Font;
             Text.Font = GameFont.Tiny;
             wGoal = Text.CalcSize(tagGoal).x + 2f * TagPadX;
@@ -199,7 +200,7 @@ namespace ColonyCode.UI
             Text.Font = old;
         }
 
-        private static void SourceTag(TaskInfo t, out string label, out float width, out Color color)
+        internal static void SourceTag(TaskInfo t, out string label, out float width, out Color color)
         {
             if (t.pending) { label = tagWaiting; width = wWaiting; color = TagWaiting; return; }
             switch (t.source)
@@ -209,6 +210,16 @@ namespace ColonyCode.UI
                 case "game": label = tagGame; width = wGame; color = TagGame; return;
                 default: label = tagClaude; width = wClaude; color = TagClaude; return;
             }
+        }
+
+        /// <summary>The red "Failed" / amber "Interrupted" tag of a done card; false when it has none.</summary>
+        internal static bool ResultTag(TaskInfo t, out string label, out float width, out Color color)
+        {
+            bool failed = t.result == "failed";
+            label = failed ? tagFailed : tagInterrupted;
+            width = failed ? wFailed : wInterrupted;
+            color = failed ? UIUtil.ColBad : TagInterrupted;
+            return t.result != null;
         }
 
         /// <summary>"↳ for: <goal>" on a subagent card, cached until the goal's subject changes; null when none.</summary>
@@ -225,7 +236,7 @@ namespace ColonyCode.UI
         }
 
         /// <summary>A small tinted box with the label: the card's source or its result.</summary>
-        private static void DrawTag(Rect r, string label, Color color)
+        internal static void DrawTag(Rect r, string label, Color color)
         {
             Widgets.DrawBoxSolid(r, new Color(color.r, color.g, color.b, 0.18f));
             GUI.color = color;
@@ -359,11 +370,14 @@ namespace ColonyCode.UI
             }
             Text.Font = GameFont.Small;
 
-            TooltipHandler.TipRegion(r, Tooltip(t));
+            // The whole card opens its details (result, changes). The name link above used the click
+            // first when it was on the name. The tooltip text is built only while hovered.
+            if (Mouse.IsOver(r)) TooltipHandler.TipRegion(r, Tooltip(t));
+            if (Widgets.ButtonInvisible(r, false)) UIEntry.OpenTaskDetail(t.sessionId, t.id);
         }
 
         /// <summary>The name shown on a card: the owner, else the agent that last moved it.</summary>
-        private static bool WhoFor(TaskInfo t, out string who, out AgentInfo agent)
+        internal static bool WhoFor(TaskInfo t, out string who, out AgentInfo agent)
         {
             var reg = UIUtil.Registry;
             agent = null;
@@ -404,6 +418,7 @@ namespace ColonyCode.UI
             if (parentLine != null) sb.Append('\n').Append(parentLine);
             if (!string.IsNullOrEmpty(t.description)) sb.Append("\n\n").Append(UIUtil.Safe(t.description));
             if (t.IsBlocked) sb.Append("\n\n").Append("ColonyCode_TaskBlockedBy".Translate(BlockerList(t)));
+            sb.Append("\n\n").Append(tagClickForDetails);
             return sb.ToString();
         }
     }

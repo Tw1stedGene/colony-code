@@ -392,4 +392,23 @@ describe('fake-bridge: task board', () => {
     assert.match(board, /#game-tc1 \[game\] Write a changelog/);
     assert.match(board, /#goal-1 \[goal\] Fix the flaky test \(interrupted\)/);
   });
+
+  test('task details: the result and changed files print; the board marks cards with a result', () => {
+    const cards = [
+      {
+        id: 'goal-2', subject: 'Add due dates', status: 'done', source: 'goal',
+        resultText: 'Done. **3 files changed**,\n12/12 tests pass.',
+        changes: [
+          { path: 'src/a.ts', additions: 3, deletions: 1, diff: '@@ -1,1 +1,3 @@\n-a\n+b\n+c\n+d' },
+          { path: 'test/b.ts', additions: 1, deletions: 1, via: ['agent-a2'], truncated: true },
+        ],
+        changesOmitted: 2,
+      },
+    ];
+    const printed = formatEvent(snapshot('dddddddd-4', cards));
+    assert.match(printed, /✓ Done\. \*\*3 files changed\*\*, 12\/12 tests pass\./);
+    assert.match(printed, /changes: src\/a\.ts \+3 -1, test\/b\.ts \+1 -1 via agent-a2 \(cut\) \+2 more/);
+    ctx.bridge._applyEvent(snapshot('dddddddd-4', cards));
+    assert.match(formatTasks(ctx.bridge, 300), /#goal-2 \[goal\] Add due dates ✓ \(4 files\)/);
+  });
 });

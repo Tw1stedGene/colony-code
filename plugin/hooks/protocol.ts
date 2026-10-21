@@ -200,6 +200,106 @@ export function diffFor(tool: string, args: Record<string, unknown>, cwd: string
   return text.length > MAX_DIFF_CHARS ? `${text.slice(0, MAX_DIFF_CHARS)}\n … cut` : text
 }
 
+// ---- task details: what one edit tool call changed (task.snapshot `changes`) ----------------
+
+/** One Edit / Write / MultiEdit / NotebookEdit call's change to one file. */
+export type EditPatch = {
+  /** cwd-relative when inside the cwd, else with the home folder shown as `~`. */
+  path: string
+  /** Unified hunk lines: `@@ ... @@` headers, then `+`, `-` and ` ` lines (no `---`/`+++` header). */
+  lines: string[]
+  additions: number
+  deletions: number
+}
+
+/** Lines one call may bring before the card's own per-file cap (tasks.ts) applies. */
+const PATCH_LINES_MAX = 1000
+
+const recordOf = (v: unknown): Record<string, unknown> | undefined => {
+  if (v !== null && typeof v === 'object' && !Array.isArray(v)) return v as Record<string, unknown>
+  if (typeof v !== 'string' || !v.trim().startsWith('{')) return undefined
+  try {
+    const parsed = JSON.parse(v) as unknown
+    return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined)
+
+/** The path a card's change names: relative to `cwd` when inside it, else `privatePath`. */
+export function changePath(path: string, cwd: string, userHome?: string): string {
+  let p = path
+  if (cwd !== '') {
+    const c = trimSlashes(cwd)
+    if (p.startsWith(`${c}/`) || p.startsWith(`${c}\\`)) p = p.slice(c.length + 1)
+  }
+  return privatePath(p, userHome)
+}
+
+/**
+ * What a finished edit tool call changed, for its task card. Prefers the tool result's
+ * `structuredPatch` (real line numbers and context: `@@ -a,b +c,d @@`); without one it falls back to
+ * the input (`@@` with the old text as `-` and the new as `+` lines, like the log's diff). Undefined
+ * for other tools, a call without a path, or an edit held back (`staged`).
+ */
+export function editPatch(
+  tool: string,
+  args: Record<string, unknown>,
+  result: unknown,
+  cwd: string,
+  userHome?: string,
+): EditPatch | undefined {
+  if (!EDIT_TOOLS.has(tool)) return undefined
+  const file = str(args.file_path) || str(args.notebook_path)
+  if (file === '') return undefined
+  const res = recordOf(result)
+  if (res?.staged === true) return undefined
+  const lines: string[] = []
+  const patch = Array.isArray(res?.structuredPatch) ? (res.structuredPatch as unknown[]) : []
+  for (const one of patch) {
+    const h = recordOf(one)
+    if (h === undefined || !Array.isArray(h.lines)) continue
+    const os = num(h.oldStart)
+    const ol = num(h.oldLines)
+    const ns = num(h.newStart)
+    const nl = num(h.newLines)
+    lines.push(os !== undefined && ol !== undefined && ns !== undefined && nl !== undefined ? `@@ -${os},${ol} +${ns},${nl} @@` : '@@')
+    for (const l of h.lines) if (typeof l === 'string') lines.push(l)
+  }
+  if (lines.length === 0) {
+    if (tool === 'Edit') {
+      lines.push('@@', ...prefixed(str(args.old_string), '-'), ...prefixed(str(args.new_string), '+'))
+    } else if (tool === 'MultiEdit' && Array.isArray(args.edits)) {
+      for (const one of args.edits as unknown[]) {
+        const edit = recordOf(one)
+        if (edit === undefined) continue
+        lines.push('@@', ...prefixed(str(edit.old_string), '-'), ...prefixed(str(edit.new_string), '+'))
+      }
+    } else if (tool === 'Write') {
+      const added = prefixed(str(args.content), '+')
+      const created = res?.type === 'create'
+      lines.push(created ? `@@ -0,0 +1,${added.length} @@` : '@@', ...added)
+    } else if (tool === 'NotebookEdit') {
+      const mode = str(args.edit_mode)
+      const cell = str(args.cell_id)
+      lines.push(cell === '' ? '@@' : `@@ cell ${cell} @@`)
+      lines.push(...prefixed(str(res?.old_source), '-'))
+      if (mode !== 'delete') lines.push(...prefixed(str(args.new_source), '+'))
+    }
+  }
+  let additions = 0
+  let deletions = 0
+  for (const l of lines) {
+    if (l.startsWith('+')) additions += 1
+    else if (l.startsWith('-')) deletions += 1
+  }
+  if (additions === 0 && deletions === 0) return undefined
+  const kept = lines.length > PATCH_LINES_MAX ? [...lines.slice(0, PATCH_LINES_MAX), ` … ${lines.length - PATCH_LINES_MAX} more lines`] : lines
+  return { path: changePath(file, cwd, userHome), lines: kept, additions, deletions }
+}
+
 /** First few non-empty lines of a tool's output. */
 export function resultSnippet(text: string, maxLines = 4, maxChars = 400): string {
   const lines = text

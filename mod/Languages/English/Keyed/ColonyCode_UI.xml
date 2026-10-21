@@ -218,4 +218,36 @@ This deletes the worktree at {1} and the branch {0}, including any work in it th
 
   <ColonyCode_TaskSrcWaiting>Waiting for Claude Code</ColonyCode_TaskSrcWaiting>
   <ColonyCode_TaskQueuedNoSession>No Claude Code session is connected. The task waits on the board and goes to the next session that connects: {0}</ColonyCode_TaskQueuedNoSession>
+
+  <!-- Task details window (click a card on the task board) -->
+  <ColonyCode_TaskClickForDetails>Click for details: Claude's result and the files it changed.</ColonyCode_TaskClickForDetails>
+  <ColonyCode_TaskStatus_todo>To do</ColonyCode_TaskStatus_todo>
+  <ColonyCode_TaskStatus_doing>In progress</ColonyCode_TaskStatus_doing>
+  <ColonyCode_TaskStatus_done>Done</ColonyCode_TaskStatus_done>
+  <ColonyCode_TaskDetailAgentCard>Agent card</ColonyCode_TaskDetailAgentCard>
+  <ColonyCode_TaskDetailParentTip>Open the goal this subagent worked for.</ColonyCode_TaskDetailParentTip>
+  <ColonyCode_TaskDetailCreated>Created {0}</ColonyCode_TaskDetailCreated>
+  <ColonyCode_TaskDetailStarted>Started {0}</ColonyCode_TaskDetailStarted>
+  <ColonyCode_TaskDetailFinished>Finished {0}</ColonyCode_TaskDetailFinished>
+  <ColonyCode_TaskDetailTook>took {0}</ColonyCode_TaskDetailTook>
+  <ColonyCode_TaskDetailTask>Task</ColonyCode_TaskDetailTask>
+  <ColonyCode_TaskDetailResult>Result</ColonyCode_TaskDetailResult>
+  <ColonyCode_TaskDetailNotStarted>Not started.</ColonyCode_TaskDetailNotStarted>
+  <ColonyCode_TaskDetailWorking>Claude is still working on this.</ColonyCode_TaskDetailWorking>
+  <ColonyCode_TaskDetailNoResultFailed>The turn failed before Claude answered.</ColonyCode_TaskDetailNoResultFailed>
+  <ColonyCode_TaskDetailNoResultInterrupted>The turn was interrupted before Claude answered.</ColonyCode_TaskDetailNoResultInterrupted>
+  <ColonyCode_TaskDetailNoResult>No answer was recorded for this task.</ColonyCode_TaskDetailNoResult>
+  <ColonyCode_TaskDetailClaudeTask>This is an entry of Claude's own task list. Claude's answer is on the goal card it belongs to.</ColonyCode_TaskDetailClaudeTask>
+  <ColonyCode_TaskDetailChanges>Changes: {0} files, +{1} -{2}</ColonyCode_TaskDetailChanges>
+  <ColonyCode_TaskDetailNoChanges>No file changes recorded for this task.</ColonyCode_TaskDetailNoChanges>
+  <ColonyCode_TaskDetailNoChangesYet>No file changes yet.</ColonyCode_TaskDetailNoChangesYet>
+  <ColonyCode_TaskDetailMoreFiles>+{0} more files not listed</ColonyCode_TaskDetailMoreFiles>
+  <ColonyCode_TaskDetailVia>via subagent</ColonyCode_TaskDetailVia>
+  <ColonyCode_TaskDetailViaTip>Changed by the subagent: {0}</ColonyCode_TaskDetailViaTip>
+  <ColonyCode_TaskDetailCut>cut</ColonyCode_TaskDetailCut>
+  <ColonyCode_TaskDetailCutTip>This diff was shortened. Open the review for the full diff.</ColonyCode_TaskDetailCutTip>
+  <ColonyCode_TaskDetailNoDiff>The diff of this file was left out to keep the update small. Open the review for the full diff.</ColonyCode_TaskDetailNoDiff>
+  <ColonyCode_TaskDetailPickFile>Pick a file to see its diff.</ColonyCode_TaskDetailPickFile>
+  <ColonyCode_TaskDetailOpenReview>Open review</ColonyCode_TaskDetailOpenReview>
+  <ColonyCode_TaskDetailGone>This task is no longer on the board.</ColonyCode_TaskDetailGone>
 </LanguageData>

@@ -21,7 +21,7 @@ food or sleep, and they don't take orders. Each powered agent desk you build bri
 ### See the real work
 Workers type, read and run tests at their desks, the monitor glows by state, and a status line
 above each worker says what their agent is doing. Select a desk and open its **Monitor** tab to
-follow the live log.
+follow the live log; long lines wrap, and changes show in red and green.
 
 ![An agent desk with its Monitor tab showing the live log](.github/screenshots/workstation-monitor.jpg)
 
@@ -36,6 +36,12 @@ To do, In progress and Done columns that fill up as you and Claude work: your go
 helpers (subagents) and tasks you add from the game.
 
 ![The task board with goal, subagent, game and Claude task cards](.github/screenshots/task-board.jpg)
+
+### Task details
+Click any card on the task board to see what came of it: Claude's answer, which files it changed,
+and the diff for each file, with buttons to jump to the worker or open the full review.
+
+![Task details: Claude's result and the changed files with their diff](.github/screenshots/task-details.jpg)
 
 ### Agent cards
 Everything about one agent: what it's doing, its current task, the last log lines with changes

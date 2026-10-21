@@ -108,6 +108,20 @@ namespace ColonyCode.UI
             Find.WindowStack.Add(new Dialog_Decision(decisionId));
         }
 
+        /// <summary>Opens the details of one task card (result, changes); an open details window switches to it.</summary>
+        public static void OpenTaskDetail(string sessionId, string taskId)
+        {
+            if (Find.WindowStack == null || string.IsNullOrEmpty(taskId)) return;
+            var open = Find.WindowStack.WindowOfType<Window_TaskDetail>();
+            if (open != null)
+            {
+                open.Show(sessionId, taskId);
+                Find.WindowStack.Notify_ClickedInsideWindow(open);
+                return;
+            }
+            Find.WindowStack.Add(new Window_TaskDetail(sessionId, taskId));
+        }
+
         /// <summary>Opens the diff viewer for one agent. Replaces an open diff window for another agent.</summary>
         public static void OpenDiff(string agentId)
         {
@@ -303,6 +317,33 @@ namespace ColonyCode.UI
                 if (string.Compare(s, start, t, 0, t.Length, StringComparison.OrdinalIgnoreCase) == 0) return true;
             }
             return false;
+        }
+
+        private static readonly GUIContent measureContent = new GUIContent();
+
+        /// <summary>
+        /// Height of <paramref name="text"/> wrapped to <paramref name="width"/> in the current font, as
+        /// Widgets.Label draws it (it draws with Text.CurFontStyle). Text.CalcHeight strips everything
+        /// between '&lt;' and '&gt;' (and "(*...)") before measuring, which under-measures agent text such as
+        /// "List&lt;string&gt;"; this measures the string as drawn, rich-text tags included. Allocates nothing.
+        /// </summary>
+        public static float TextHeight(string text, float width)
+        {
+            if (string.IsNullOrEmpty(text)) return 0f;
+            measureContent.text = text;
+            float h = Text.CurFontStyle.CalcHeight(measureContent, width);
+            measureContent.text = null;
+            return h;
+        }
+
+        /// <summary>"12s", "3m 07s", "1h 05m" for a duration in milliseconds; "" when negative.</summary>
+        public static string FormatDuration(long ms)
+        {
+            if (ms < 0) return "";
+            long s = ms / 1000;
+            if (s < 60) return s + "s";
+            if (s < 3600) return (s / 60) + "m " + (s % 60).ToString("00") + "s";
+            return (s / 3600) + "h " + (s % 3600 / 60).ToString("00") + "m";
         }
 
         public static string OneLine(string s, int max = 200)

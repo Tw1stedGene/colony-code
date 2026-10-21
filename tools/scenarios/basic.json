@@ -396,7 +396,15 @@
               "subject": "Add due dates to todos and show overdue items in red",
               "status": "doing",
               "source": "goal",
-              "agentId": "{{lead}}"
+              "agentId": "{{lead}}",
+              "changes": [
+                {
+                  "path": "src/model/todo.ts",
+                  "additions": 5,
+                  "deletions": 0,
+                  "diff": "@@ -1,5 +1,10 @@\n export interface Todo {\n   id: string;\n   title: string;\n   done: boolean;\n+  dueDate?: string; // ISO date, e.g. 2026-10-31\n }\n+\n+export function isOverdue(todo: Todo, now = new Date()): boolean {\n+  return !todo.done && !!todo.dueDate && new Date(todo.dueDate) < now;\n+}"
+                }
+              ]
             }
           ]
         }
@@ -464,7 +472,21 @@
               "subject": "Add due dates to todos and show overdue items in red",
               "status": "doing",
               "source": "goal",
-              "agentId": "{{lead}}"
+              "agentId": "{{lead}}",
+              "changes": [
+                {
+                  "path": "src/model/todo.ts",
+                  "additions": 5,
+                  "deletions": 0,
+                  "diff": "@@ -1,5 +1,10 @@\n export interface Todo {\n   id: string;\n   title: string;\n   done: boolean;\n+  dueDate?: string; // ISO date, e.g. 2026-10-31\n }\n+\n+export function isOverdue(todo: Todo, now = new Date()): boolean {\n+  return !todo.done && !!todo.dueDate && new Date(todo.dueDate) < now;\n+}"
+                },
+                {
+                  "path": "src/ui/list.ts",
+                  "additions": 3,
+                  "deletions": 1,
+                  "diff": "@@ -55,7 +55,9 @@ export function renderList(todos: Todo[]) {\n   for (const todo of todos) {\n-    out.push(renderTodo(todo));\n+    const line = renderTodo(todo);\n+    const due = todo.dueDate ? ` (due ${todo.dueDate})` : '';\n+    out.push(isOverdue(todo) ? red(line + due) : line + due);\n   }\n   return out.join('\\n');\n }"
+                }
+              ]
             }
           ]
         },
@@ -568,7 +590,21 @@
               "subject": "Add due dates to todos and show overdue items in red",
               "status": "doing",
               "source": "goal",
-              "agentId": "{{lead}}"
+              "agentId": "{{lead}}",
+              "changes": [
+                {
+                  "path": "src/model/todo.ts",
+                  "additions": 5,
+                  "deletions": 0,
+                  "diff": "@@ -1,5 +1,10 @@\n export interface Todo {\n   id: string;\n   title: string;\n   done: boolean;\n+  dueDate?: string; // ISO date, e.g. 2026-10-31\n }\n+\n+export function isOverdue(todo: Todo, now = new Date()): boolean {\n+  return !todo.done && !!todo.dueDate && new Date(todo.dueDate) < now;\n+}"
+                },
+                {
+                  "path": "src/ui/list.ts",
+                  "additions": 3,
+                  "deletions": 1,
+                  "diff": "@@ -55,7 +55,9 @@ export function renderList(todos: Todo[]) {\n   for (const todo of todos) {\n-    out.push(renderTodo(todo));\n+    const line = renderTodo(todo);\n+    const due = todo.dueDate ? ` (due ${todo.dueDate})` : '';\n+    out.push(isOverdue(todo) ? red(line + due) : line + due);\n   }\n   return out.join('\\n');\n }"
+                }
+              ]
             },
             {
               "id": "agent-{{worker}}",
@@ -719,7 +755,21 @@
               "subject": "Add due dates to todos and show overdue items in red",
               "status": "doing",
               "source": "goal",
-              "agentId": "{{lead}}"
+              "agentId": "{{lead}}",
+              "changes": [
+                {
+                  "path": "src/model/todo.ts",
+                  "additions": 5,
+                  "deletions": 0,
+                  "diff": "@@ -1,5 +1,10 @@\n export interface Todo {\n   id: string;\n   title: string;\n   done: boolean;\n+  dueDate?: string; // ISO date, e.g. 2026-10-31\n }\n+\n+export function isOverdue(todo: Todo, now = new Date()): boolean {\n+  return !todo.done && !!todo.dueDate && new Date(todo.dueDate) < now;\n+}"
+                },
+                {
+                  "path": "src/ui/list.ts",
+                  "additions": 3,
+                  "deletions": 1,
+                  "diff": "@@ -55,7 +55,9 @@ export function renderList(todos: Todo[]) {\n   for (const todo of todos) {\n-    out.push(renderTodo(todo));\n+    const line = renderTodo(todo);\n+    const due = todo.dueDate ? ` (due ${todo.dueDate})` : '';\n+    out.push(isOverdue(todo) ? red(line + due) : line + due);\n   }\n   return out.join('\\n');\n }"
+                }
+              ]
             },
             {
               "id": "agent-{{worker}}",
@@ -729,7 +779,8 @@
               "owner": "test-runner",
               "agentId": "{{worker}}",
               "parent": "{{goal}}",
-              "description": "Run npm test and report any failures with file and line."
+              "description": "Run npm test and report any failures with file and line.",
+              "resultText": "1 failure in `test/list.test.ts`: the snapshot predates the due-date suffix.\n\n- **renders the list**: expected `Buy milk`, got `Buy milk (due 2020-01-01)` in red\n- the other 11 tests pass"
             }
           ]
         }
@@ -802,7 +853,21 @@
               "subject": "Add due dates to todos and show overdue items in red",
               "status": "doing",
               "source": "goal",
-              "agentId": "{{lead}}"
+              "agentId": "{{lead}}",
+              "changes": [
+                {
+                  "path": "src/model/todo.ts",
+                  "additions": 5,
+                  "deletions": 0,
+                  "diff": "@@ -1,5 +1,10 @@\n export interface Todo {\n   id: string;\n   title: string;\n   done: boolean;\n+  dueDate?: string; // ISO date, e.g. 2026-10-31\n }\n+\n+export function isOverdue(todo: Todo, now = new Date()): boolean {\n+  return !todo.done && !!todo.dueDate && new Date(todo.dueDate) < now;\n+}"
+                },
+                {
+                  "path": "src/ui/list.ts",
+                  "additions": 3,
+                  "deletions": 1,
+                  "diff": "@@ -55,7 +55,9 @@ export function renderList(todos: Todo[]) {\n   for (const todo of todos) {\n-    out.push(renderTodo(todo));\n+    const line = renderTodo(todo);\n+    const due = todo.dueDate ? ` (due ${todo.dueDate})` : '';\n+    out.push(isOverdue(todo) ? red(line + due) : line + due);\n   }\n   return out.join('\\n');\n }"
+                }
+              ]
             },
             {
               "id": "agent-{{worker}}",
@@ -812,7 +877,8 @@
               "owner": "test-runner",
               "agentId": "{{worker}}",
               "parent": "{{goal}}",
-              "description": "Run npm test and report any failures with file and line."
+              "description": "Run npm test and report any failures with file and line.",
+              "resultText": "1 failure in `test/list.test.ts`: the snapshot predates the due-date suffix.\n\n- **renders the list**: expected `Buy milk`, got `Buy milk (due 2020-01-01)` in red\n- the other 11 tests pass"
             },
             {
               "id": "{{gameTask}}",
@@ -1128,7 +1194,27 @@
               "subject": "Add due dates to todos and show overdue items in red",
               "status": "doing",
               "source": "goal",
-              "agentId": "{{lead}}"
+              "agentId": "{{lead}}",
+              "changes": [
+                {
+                  "path": "src/model/todo.ts",
+                  "additions": 5,
+                  "deletions": 0,
+                  "diff": "@@ -1,5 +1,10 @@\n export interface Todo {\n   id: string;\n   title: string;\n   done: boolean;\n+  dueDate?: string; // ISO date, e.g. 2026-10-31\n }\n+\n+export function isOverdue(todo: Todo, now = new Date()): boolean {\n+  return !todo.done && !!todo.dueDate && new Date(todo.dueDate) < now;\n+}"
+                },
+                {
+                  "path": "src/ui/list.ts",
+                  "additions": 3,
+                  "deletions": 1,
+                  "diff": "@@ -55,7 +55,9 @@ export function renderList(todos: Todo[]) {\n   for (const todo of todos) {\n-    out.push(renderTodo(todo));\n+    const line = renderTodo(todo);\n+    const due = todo.dueDate ? ` (due ${todo.dueDate})` : '';\n+    out.push(isOverdue(todo) ? red(line + due) : line + due);\n   }\n   return out.join('\\n');\n }"
+                },
+                {
+                  "path": "test/list.test.ts",
+                  "additions": 1,
+                  "deletions": 1,
+                  "diff": "@@ -30,3 +30,3 @@\n-  expect(out).toBe('Buy milk');\n+  expect(out).toBe(red('Buy milk (due 2020-01-01)'));"
+                }
+              ]
             },
             {
               "id": "agent-{{worker}}",
@@ -1138,7 +1224,8 @@
               "owner": "test-runner",
               "agentId": "{{worker}}",
               "parent": "{{goal}}",
-              "description": "Run npm test and report any failures with file and line."
+              "description": "Run npm test and report any failures with file and line.",
+              "resultText": "1 failure in `test/list.test.ts`: the snapshot predates the due-date suffix.\n\n- **renders the list**: expected `Buy milk`, got `Buy milk (due 2020-01-01)` in red\n- the other 11 tests pass"
             },
             {
               "id": "{{gameTask}}",
@@ -1277,7 +1364,28 @@
               "subject": "Add due dates to todos and show overdue items in red",
               "status": "done",
               "source": "goal",
-              "agentId": "{{lead}}"
+              "agentId": "{{lead}}",
+              "changes": [
+                {
+                  "path": "src/model/todo.ts",
+                  "additions": 5,
+                  "deletions": 0,
+                  "diff": "@@ -1,5 +1,10 @@\n export interface Todo {\n   id: string;\n   title: string;\n   done: boolean;\n+  dueDate?: string; // ISO date, e.g. 2026-10-31\n }\n+\n+export function isOverdue(todo: Todo, now = new Date()): boolean {\n+  return !todo.done && !!todo.dueDate && new Date(todo.dueDate) < now;\n+}"
+                },
+                {
+                  "path": "src/ui/list.ts",
+                  "additions": 3,
+                  "deletions": 1,
+                  "diff": "@@ -55,7 +55,9 @@ export function renderList(todos: Todo[]) {\n   for (const todo of todos) {\n-    out.push(renderTodo(todo));\n+    const line = renderTodo(todo);\n+    const due = todo.dueDate ? ` (due ${todo.dueDate})` : '';\n+    out.push(isOverdue(todo) ? red(line + due) : line + due);\n   }\n   return out.join('\\n');\n }"
+                },
+                {
+                  "path": "test/list.test.ts",
+                  "additions": 1,
+                  "deletions": 1,
+                  "diff": "@@ -30,3 +30,3 @@\n-  expect(out).toBe('Buy milk');\n+  expect(out).toBe(red('Buy milk (due 2020-01-01)'));"
+                }
+              ],
+              "resultText": "Done. Todos have an optional `dueDate`; overdue items render in **red**.\n\n- `src/model/todo.ts`: `dueDate?: string` plus an `isOverdue()` helper\n- `src/ui/list.ts`: shows `(due …)` after each title, overdue lines in red\n- `test/list.test.ts`: snapshot updated for the due-date suffix\n\n**3 files changed**, 12/12 tests pass."
             },
             {
               "id": "agent-{{worker}}",
@@ -1287,7 +1395,8 @@
               "owner": "test-runner",
               "agentId": "{{worker}}",
               "parent": "{{goal}}",
-              "description": "Run npm test and report any failures with file and line."
+              "description": "Run npm test and report any failures with file and line.",
+              "resultText": "1 failure in `test/list.test.ts`: the snapshot predates the due-date suffix.\n\n- **renders the list**: expected `Buy milk`, got `Buy milk (due 2020-01-01)` in red\n- the other 11 tests pass"
             },
             {
               "id": "{{gameTask}}",
@@ -1556,7 +1665,28 @@
               "subject": "Add due dates to todos and show overdue items in red",
               "status": "done",
               "source": "goal",
-              "agentId": "{{lead}}"
+              "agentId": "{{lead}}",
+              "changes": [
+                {
+                  "path": "src/model/todo.ts",
+                  "additions": 5,
+                  "deletions": 0,
+                  "diff": "@@ -1,5 +1,10 @@\n export interface Todo {\n   id: string;\n   title: string;\n   done: boolean;\n+  dueDate?: string; // ISO date, e.g. 2026-10-31\n }\n+\n+export function isOverdue(todo: Todo, now = new Date()): boolean {\n+  return !todo.done && !!todo.dueDate && new Date(todo.dueDate) < now;\n+}"
+                },
+                {
+                  "path": "src/ui/list.ts",
+                  "additions": 3,
+                  "deletions": 1,
+                  "diff": "@@ -55,7 +55,9 @@ export function renderList(todos: Todo[]) {\n   for (const todo of todos) {\n-    out.push(renderTodo(todo));\n+    const line = renderTodo(todo);\n+    const due = todo.dueDate ? ` (due ${todo.dueDate})` : '';\n+    out.push(isOverdue(todo) ? red(line + due) : line + due);\n   }\n   return out.join('\\n');\n }"
+                },
+                {
+                  "path": "test/list.test.ts",
+                  "additions": 1,
+                  "deletions": 1,
+                  "diff": "@@ -30,3 +30,3 @@\n-  expect(out).toBe('Buy milk');\n+  expect(out).toBe(red('Buy milk (due 2020-01-01)'));"
+                }
+              ],
+              "resultText": "Done. Todos have an optional `dueDate`; overdue items render in **red**.\n\n- `src/model/todo.ts`: `dueDate?: string` plus an `isOverdue()` helper\n- `src/ui/list.ts`: shows `(due …)` after each title, overdue lines in red\n- `test/list.test.ts`: snapshot updated for the due-date suffix\n\n**3 files changed**, 12/12 tests pass."
             },
             {
               "id": "agent-{{worker}}",
@@ -1566,14 +1696,24 @@
               "owner": "test-runner",
               "agentId": "{{worker}}",
               "parent": "{{goal}}",
-              "description": "Run npm test and report any failures with file and line."
+              "description": "Run npm test and report any failures with file and line.",
+              "resultText": "1 failure in `test/list.test.ts`: the snapshot predates the due-date suffix.\n\n- **renders the list**: expected `Buy milk`, got `Buy milk (due 2020-01-01)` in red\n- the other 11 tests pass"
             },
             {
               "id": "{{gameTask}}",
               "subject": "Write a CHANGELOG entry for due dates",
               "status": "done",
               "source": "game",
-              "agentId": "{{lead}}"
+              "agentId": "{{lead}}",
+              "resultText": "Added a **Due dates** entry to `CHANGELOG.md` under *Unreleased*.",
+              "changes": [
+                {
+                  "path": "CHANGELOG.md",
+                  "additions": 4,
+                  "deletions": 0,
+                  "diff": "@@ -1,4 +1,8 @@\n # Changelog\n \n ## Unreleased\n+\n+### Due dates\n+- Todos can have an optional due date.\n+- Overdue items show in red.\n \n ## 0.3.0"
+                }
+              ]
             }
           ]
         }

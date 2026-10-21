@@ -22,7 +22,7 @@ namespace ColonyCode.Dev
         private const float SettleSeconds = 2.5f;
         private const float StepTimeoutSeconds = 240f;
 
-        private enum Step { Office, Monitor, Decision, TaskBoard, AgentCard, Review, Done }
+        private enum Step { Office, Decision, TaskBoard, TaskDetail, Monitor, AgentCard, Review, Done }
 
         private static Step step = Step.Office;
         private static float stepStarted = -1f;
@@ -132,6 +132,17 @@ namespace ColonyCode.Dev
                     break;
                 }
 
+                case Step.TaskDetail:
+                {
+                    var t = DoneCardWithDetails(reg);
+                    if (t == null) return;
+                    CloseOurWindows();
+                    UIEntry.OpenTaskDetail(t.sessionId, t.id);
+                    Shoot("taskdetail");
+                    afterShot = CloseOurWindows;
+                    break;
+                }
+
                 case Step.AgentCard:
                 {
                     var lead = Lead(reg);
@@ -186,7 +197,7 @@ namespace ColonyCode.Dev
 
         private static readonly Type[] OurWindows =
         {
-            typeof(Window_TaskBoard), typeof(Window_Decisions), typeof(Window_AgentCard), typeof(Window_Review),
+            typeof(Window_TaskBoard), typeof(Window_Decisions), typeof(Window_AgentCard), typeof(Window_Review), typeof(Window_TaskDetail),
         };
 
         private static void CloseOurWindows()
@@ -200,9 +211,29 @@ namespace ColonyCode.Dev
             {
                 if (!(b is Building_AgentDesk desk)) continue;
                 var a = desk.Agent;
-                if (a != null && a.log != null && a.log.Count >= 3) return desk;
+                if (a != null && a.log != null && a.log.Count >= 3 && HasLongLine(a.log)) return desk;
             }
             return null;
+        }
+
+        private static bool HasLongLine(List<ColonyCode.Agents.LogEntry> log)
+        {
+            foreach (var e in log)
+                if (e != null && e.text != null && e.text.Length > 140) return true;
+            return false;
+        }
+
+        /// <summary>A finished card with a result and file changes, preferring a goal card.</summary>
+        private static TaskInfo DoneCardWithDetails(AgentRegistry reg)
+        {
+            if (reg == null) return null;
+            TaskInfo best = null;
+            foreach (var t in reg.Tasks)
+            {
+                if (t.status != "done" || string.IsNullOrEmpty(t.resultText) || t.changes == null || t.changes.Count == 0) continue;
+                if (best == null || (t.source == "goal" && best.source != "goal")) best = t;
+            }
+            return best;
         }
 
         private static bool BoardIsInteresting(AgentRegistry reg)

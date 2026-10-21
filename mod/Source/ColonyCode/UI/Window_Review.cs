@@ -15,41 +15,19 @@ namespace ColonyCode.UI
     {
         private const float ListWidth = 300f;
         private const float ItemHeight = 50f;
-        private const float RowH = 18f;
-        private const float NumW = 42f;
-        private const int KeepContext = 3;
         /// <summary>After this long without diff.result, a hint is shown.</summary>
         private const long SlowMs = 15000;
-
-        private enum RowKind { File, Hunk, Line, Collapsed }
-
-        private struct Row
-        {
-            public RowKind kind;
-            public string text;
-            public string kindCode; // add / del / ctx for lines
-            public int oldNo, newNo;
-            public string oldStr, newStr; // cached line-number labels (null when absent)
-            public string expandKey; // for collapsed rows
-            public string tip;
-        }
 
         private string sessionId;
         /// <summary>Selected worktree id; null = main checkout.</summary>
         private string selected;
         private readonly Dictionary<string, string> requestIds = new Dictionary<string, string>();
         private readonly HashSet<string> autoRequested = new HashSet<string>();
-        private readonly HashSet<string> expanded = new HashSet<string>();
-        private readonly List<Row> rows = new List<Row>();
-        private readonly List<KeyValuePair<string, int>> fileRows = new List<KeyValuePair<string, int>>();
+        /// <summary>The selected item's diff (shared with the task details window).</summary>
+        private readonly DiffRowsView diffView = new DiffRowsView();
         private string lastMergeId;
 
-        // Row cache key.
-        private DiffRequest cachedReq;
-        private bool cachedReceived;
-        private int cachedExpandCount = -1;
-
-        private Vector2 listScroll, diffScroll, fileScroll;
+        private Vector2 listScroll, fileScroll;
 
         public Window_Review(string sessionId)
         {
@@ -72,7 +50,7 @@ namespace ColonyCode.UI
             if (id == sessionId) return;
             sessionId = id;
             selected = null;
-            diffScroll = Vector2.zero;
+            diffView.ResetScroll();
         }
 
         private static string Key(string session, string worktree) => (session ?? "") + "|" + (worktree ?? "");
@@ -185,7 +163,7 @@ namespace ColonyCode.UI
         {
             if (selected == worktree) return;
             selected = worktree;
-            diffScroll = Vector2.zero;
+            diffView.ResetScroll();
             fileScroll = Vector2.zero;
         }
 
@@ -398,7 +376,8 @@ namespace ColonyCode.UI
                 return;
             }
 
-            Rebuild(req);
+            // rebuilt only when the request, its arrival or the expanded runs change
+            diffView.SetFiles(req, req.received ? 1 : 0, req.files);
 
             // File list.
             float listH = Mathf.Min(req.files.Count * 20f + 22f, 130f);
@@ -406,7 +385,7 @@ namespace ColonyCode.UI
             DrawFileList(listRect, req);
             y += listH + 4f;
 
-            DrawRows(new Rect(inner.x, y, inner.width, inner.yMax - y));
+            diffView.Draw(new Rect(inner.x, y, inner.width, inner.yMax - y));
         }
 
         private void DrawFileList(Rect rect, DiffRequest req)
@@ -436,11 +415,7 @@ namespace ColonyCode.UI
                 GUI.color = UIUtil.ColDiffDel;
                 Widgets.Label(new Rect(r.xMax - 46f, r.y, 46f, r.height), "-" + f.deletions);
                 GUI.color = Color.white;
-                if (Widgets.ButtonInvisible(r))
-                {
-                    foreach (var kv in fileRows)
-                        if (kv.Key == f.path) { diffScroll.y = kv.Value * RowH; break; }
-                }
+                if (Widgets.ButtonInvisible(r)) diffView.ScrollToFile(f.path);
             }
             Text.WordWrap = oldWrap;
             Widgets.EndScrollView();
@@ -458,143 +433,6 @@ namespace ColonyCode.UI
             }
         }
 
-        private static string StatusLabel(string status)
-        {
-            string k = "ColonyCode_FileStatus_" + (status ?? "modified");
-            return k.CanTranslate() ? k.Translate().ToString() : (status ?? "");
-        }
-
-        private void Rebuild(DiffRequest req)
-        {
-            if (ReferenceEquals(req, cachedReq) && req.received == cachedReceived && expanded.Count == cachedExpandCount) return;
-            if (!ReferenceEquals(req, cachedReq)) expanded.Clear();
-            cachedReq = req;
-            cachedReceived = req.received;
-            cachedExpandCount = expanded.Count;
-            rows.Clear();
-            fileRows.Clear();
-            for (int fi = 0; fi < req.files.Count; fi++)
-            {
-                var f = req.files[fi];
-                fileRows.Add(new KeyValuePair<string, int>(f.path, rows.Count));
-                rows.Add(new Row { kind = RowKind.File, text = StatusLabel(f.status) + "  " + UIUtil.Safe(f.path) + "   +" + f.additions + " -" + f.deletions, tip = UIUtil.Safe(f.path) });
-                for (int hi = 0; hi < f.hunks.Count; hi++)
-                {
-                    var h = f.hunks[hi];
-                    rows.Add(new Row { kind = RowKind.Hunk, text = UIUtil.Safe(Clip(h.header)) });
-                    AddLines(h, fi + ":" + hi);
-                }
-            }
-            cachedExpandCount = expanded.Count;
-        }
-
-        /// <summary>Adds a hunk's lines; long runs of unchanged context are collapsed (click to expand).</summary>
-        private void AddLines(DiffHunk h, string hunkKey)
-        {
-            var lines = h.lines;
-            int i = 0;
-            while (i < lines.Count)
-            {
-                if (lines[i].kind != "ctx") { AddLine(lines[i]); i++; continue; }
-                int start = i;
-                while (i < lines.Count && lines[i].kind == "ctx") i++;
-                int end = i; // exclusive
-                bool leading = start == 0, trailing = end == lines.Count;
-                int keepHead = leading ? 0 : KeepContext;
-                int keepTail = trailing ? 0 : KeepContext;
-                int len = end - start;
-                string key = hunkKey + ":" + start;
-                if (len <= keepHead + keepTail + 2 || expanded.Contains(key))
-                {
-                    for (int k = start; k < end; k++) AddLine(lines[k]);
-                    continue;
-                }
-                for (int k = start; k < start + keepHead; k++) AddLine(lines[k]);
-                int hidden = len - keepHead - keepTail;
-                rows.Add(new Row { kind = RowKind.Collapsed, text = "ColonyCode_ReviewCollapsed".Translate(hidden), expandKey = key });
-                for (int k = end - keepTail; k < end; k++) AddLine(lines[k]);
-            }
-        }
-
-        private void AddLine(DiffLine l)
-        {
-            string text = l.text ?? "";
-            char sign = l.kind == "add" ? '+' : l.kind == "del" ? '-' : ' ';
-            rows.Add(new Row
-            {
-                kind = RowKind.Line,
-                kindCode = l.kind,
-                // display text cached with its +/-/space prefix: DrawRows allocates nothing per event
-                text = sign + " " + UIUtil.Safe(Clip(text)),
-                oldNo = l.oldNo,
-                newNo = l.newNo,
-                oldStr = l.oldNo > 0 ? l.oldNo.ToString() : null,
-                newStr = l.newNo > 0 ? l.newNo.ToString() : null,
-                tip = text.Length > 160 ? UIUtil.Safe(text.Length > 2000 ? text.Substring(0, 2000) : text) : null,
-            });
-        }
-
-        private static string Clip(string s) => s.Length > 400 ? s.Substring(0, 400) + "…" : s;
-
-        private static readonly Color AddBg = new Color(0.1f, 0.3f, 0.1f, 0.55f);
-        private static readonly Color DelBg = new Color(0.35f, 0.1f, 0.1f, 0.55f);
-        private static readonly Color FileBg = new Color(0.2f, 0.2f, 0.22f, 0.95f);
-
-        private void DrawRows(Rect outRect)
-        {
-            float contentH = rows.Count * RowH;
-            var view = new Rect(0f, 0f, outRect.width - 16f, contentH);
-            Widgets.BeginScrollView(outRect, ref diffScroll, view);
-            var oldFont = Text.Font;
-            var oldWrap = Text.WordWrap;
-            var oldAnchor = Text.Anchor;
-            Text.Font = GameFont.Tiny;
-            Text.WordWrap = false;
-            Text.Anchor = TextAnchor.MiddleLeft;
-            int first = Mathf.Max(0, Mathf.FloorToInt(diffScroll.y / RowH) - 1);
-            int last = Mathf.Min(rows.Count - 1, Mathf.CeilToInt((diffScroll.y + outRect.height) / RowH) + 1);
-            string expand = null;
-            for (int i = first; i <= last; i++)
-            {
-                var row = rows[i];
-                var r = new Rect(0f, i * RowH, view.width, RowH);
-                switch (row.kind)
-                {
-                    case RowKind.File:
-                        Widgets.DrawBoxSolid(r, FileBg);
-                        GUI.color = UIUtil.ColDiffFile;
-                        Widgets.Label(new Rect(r.x + 4f, r.y, r.width - 8f, r.height), row.text);
-                        break;
-                    case RowKind.Hunk:
-                        GUI.color = UIUtil.ColDiffHunk;
-                        Widgets.Label(new Rect(r.x + 2f * NumW + 8f, r.y, r.width - 2f * NumW - 8f, r.height), row.text);
-                        break;
-                    case RowKind.Collapsed:
-                        Widgets.DrawHighlightIfMouseover(r);
-                        GUI.color = UIUtil.ColMuted;
-                        Widgets.Label(new Rect(r.x + 2f * NumW + 8f, r.y, r.width - 2f * NumW - 8f, r.height), row.text);
-                        if (Widgets.ButtonInvisible(r)) expand = row.expandKey;
-                        break;
-                    default:
-                        if (row.kindCode == "add") Widgets.DrawBoxSolid(r, AddBg);
-                        else if (row.kindCode == "del") Widgets.DrawBoxSolid(r, DelBg);
-                        GUI.color = UIUtil.ColMuted;
-                        Text.Anchor = TextAnchor.MiddleRight;
-                        if (row.oldStr != null) Widgets.Label(new Rect(r.x, r.y, NumW - 4f, r.height), row.oldStr);
-                        if (row.newStr != null) Widgets.Label(new Rect(r.x + NumW, r.y, NumW - 4f, r.height), row.newStr);
-                        Text.Anchor = TextAnchor.MiddleLeft;
-                        GUI.color = row.kindCode == "add" ? UIUtil.ColDiffAdd : row.kindCode == "del" ? UIUtil.ColDiffDel : UIUtil.ColResult;
-                        Widgets.Label(new Rect(r.x + 2f * NumW, r.y, r.width - 2f * NumW, r.height), row.text);
-                        break;
-                }
-                if (row.tip != null && Mouse.IsOver(r)) TooltipHandler.TipRegion(r, row.tip);
-            }
-            GUI.color = Color.white;
-            Text.Font = oldFont;
-            Text.WordWrap = oldWrap;
-            Text.Anchor = oldAnchor;
-            Widgets.EndScrollView();
-            if (expand != null) expanded.Add(expand);
-        }
+        private static string StatusLabel(string status) => DiffRowsView.StatusLabel(status);
     }
 }

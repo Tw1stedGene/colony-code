@@ -16,7 +16,11 @@ type Card = {
   owner?: string
   agentId?: string
 }
-const board = (w: World) => (ofType(w, 'task.snapshot').at(-1)?.tasks as Card[] | undefined) ?? []
+// timestamps (createdAt / startedAt / doneAt) come from the wall clock: details.test.ts checks them
+const board = (w: World) =>
+  ((ofType(w, 'task.snapshot').at(-1)?.tasks as (Card & Record<string, unknown>)[] | undefined) ?? []).map(
+    ({ createdAt: _c, startedAt: _s, doneAt: _d, ...rest }) => rest as Card,
+  )
 const card = (w: World, id: string) => board(w).find(c => c.id === id)
 const START = { cwd: '/work/todo-app', surface: 'terminal', isInteractive: true } as const
 const typed = (text: string, turnId?: string) => ({

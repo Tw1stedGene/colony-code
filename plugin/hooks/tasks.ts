@@ -29,7 +29,35 @@ export type BoardTask = {
   /** The agent that last moved the task (lead id or worker agentId). */
   agentId?: string
   blockedBy?: string[]
+  /** Derived cards: when the card was made, its turn started (first time), and it went done (epoch ms). */
+  createdAt?: number
+  startedAt?: number
+  doneAt?: number
+  /** Derived cards: the final answer of the turn that completed it (snapshot only, see `list`). */
+  resultText?: string
+  /** Derived cards: files its turn(s) changed (snapshot only, see `list`). */
+  changes?: CardChange[]
+  /** Files changed beyond CHANGE_FILES_MAX, not listed. */
+  changesOmitted?: number
 }
+
+/** One file a card's turn changed (task.snapshot `changes`). */
+export type CardChange = {
+  /** cwd-relative (else `~/...`); never an absolute home path. */
+  path: string
+  /** Summed over every edit of the file during the card's turn(s). */
+  additions: number
+  deletions: number
+  /** Unified hunks of every edit, in call order (`@@` headers, `+`/`-`/` ` lines; no `---`/`+++`). */
+  diff?: string
+  /** The diff was cut (per-file caps) or left out (snapshot budget, older card). */
+  truncated?: true
+  /** On a goal card: the subagent cards (`agent-<id>`) whose edits are included. */
+  via?: string[]
+}
+
+/** An edit as register.ts hands it over (protocol.ts `editPatch`). */
+export type PatchSeen = { path: string; lines: string[]; additions: number; deletions: number }
 
 export const TASK_TOOLS = new Set(['TaskCreate', 'TaskUpdate', 'TaskList', 'TaskGet', 'TodoWrite'])
 
@@ -76,6 +104,11 @@ export function mapStatus(s: unknown): BoardStatus | 'deleted' | undefined {
 const idOf = (v: unknown): string | undefined =>
   typeof v === 'string' && v !== '' ? v : typeof v === 'number' && Number.isFinite(v) ? String(v) : undefined
 
+/** `t` (already trimmed) cut to `max` chars with an ellipsis; newlines kept. */
+function clipKeep(t: string, max: number): string {
+  return t.length <= max ? t : `${t.slice(0, max - 1).trimEnd()}…`
+}
+
 function clip(v: unknown, max: number): string | undefined {
   if (typeof v !== 'string') return undefined
   const t = v.trim()
@@ -103,6 +136,9 @@ function clean(t: BoardTask): BoardTask {
   if (t.owner !== undefined) out.owner = t.owner
   if (t.agentId !== undefined) out.agentId = t.agentId
   if (t.blockedBy !== undefined && t.blockedBy.length > 0) out.blockedBy = [...t.blockedBy]
+  if (t.createdAt !== undefined) out.createdAt = t.createdAt
+  if (t.startedAt !== undefined) out.startedAt = t.startedAt
+  if (t.doneAt !== undefined && t.status === 'done') out.doneAt = t.doneAt
   return out
 }
 
@@ -122,6 +158,22 @@ export const MESSAGE_PREFIX = '[RimWorld message for '
 export const CARD_SUBJECT_MAX = 80
 /** Done goal/agent/game cards kept per session (newest by completion). */
 export const DONE_CARDS_MAX = 100
+/** `resultText` of a card, at most (chars). */
+export const RESULT_MAX = 4000
+/** `resultText` of a done card older than the newest RICH_DONE_MAX (chars). */
+export const RESULT_OLD_MAX = 500
+/** Done cards per session (newest by completion) that keep `changes` and the full `resultText`. */
+export const RICH_DONE_MAX = 20
+/** Files listed per card; more are counted in `changesOmitted`. */
+export const CHANGE_FILES_MAX = 20
+/** Diff lines kept per file and card. */
+export const CHANGE_LINES_MAX = 300
+/** Diff chars kept per file and card. */
+export const CHANGE_CHARS_MAX = 12_000
+/** Diff chars per snapshot, over all cards (open cards first, then done newest first). */
+export const SNAPSHOT_DIFF_BUDGET = 200_000
+const EARLY_AGENTS_MAX = 20
+const EARLY_PATCHES_MAX = 50
 const PENDING_MAX = 20
 const FINISHED_AGENTS_MAX = 50
 
@@ -177,8 +229,29 @@ type Pending = {
   echo?: boolean
 }
 
+/** A file's change as a card collects it. */
+type ChangeAcc = {
+  path: string
+  additions: number
+  deletions: number
+  lines: string[]
+  chars: number
+  truncated: boolean
+  via: string[]
+}
+
 type Derived = {
   cards: Map<string, BoardTask>
+  /** card id → final answer (clipped to RESULT_MAX). */
+  results: Map<string, string>
+  /** card id → path → its change. */
+  changes: Map<string, Map<string, ChangeAcc>>
+  /** card id → paths beyond CHANGE_FILES_MAX. */
+  omitted: Map<string, Set<string>>
+  /** Edits of agents whose spawn was not seen yet (agentId → patches). */
+  early: Map<string, PatchSeen[]>
+  /** Set when results or changes changed (not part of the cheap comparison in changeCards). */
+  heavy: boolean
   /** card id → completion order, for the done cap. */
   doneAt: Map<string, number>
   pending: Pending[]
@@ -189,8 +262,8 @@ type Derived = {
   lastGoal?: string
   /** agentId → card id. */
   agentCards: Map<string, string>
-  /** Agents whose turn ended before their spawn was seen (agentId → result or ''). */
-  finished: Map<string, CardResult | ''>
+  /** Agents whose turn ended before their spawn was seen (agentId → result or '', and its answer). */
+  finished: Map<string, { result: CardResult | ''; answer: string }>
 }
 
 export type PromptSeen = {
@@ -218,6 +291,9 @@ export class TaskBook {
   private readonly derived = new Map<string, Derived>()
   private doneCounter = 0
 
+  /** `now`: the clock for the derived cards' createdAt / startedAt / doneAt (epoch ms). */
+  constructor(private readonly now: () => number = () => Date.now()) {}
+
   /** True once the session has a list (even an empty one): then it is worth (re)sending. */
   has(sessionId: string): boolean {
     return this.lists.has(sessionId) || (this.derived.get(sessionId)?.cards.size ?? 0) > 0
@@ -225,10 +301,67 @@ export class TaskBook {
 
   /** The session's tasks for `task.snapshot`: Claude's own tasks, then the derived cards. */
   list(sessionId: string): BoardTask[] {
-    const m = this.lists.get(sessionId)
-    const own = m === undefined ? [] : [...m.values()].map(clean)
+    const own = this.ownList(sessionId)
     const d = this.derived.get(sessionId)
-    return d === undefined ? own : [...own, ...[...d.cards.values()].map(clean)]
+    if (d === undefined) return own
+    const heavy = this.heavyFields(d)
+    return [
+      ...own,
+      ...[...d.cards.values()].map(c => {
+        const out = clean(c)
+        const h = heavy.get(c.id)
+        if (h?.resultText !== undefined) out.resultText = h.resultText
+        if (h?.changes !== undefined && h.changes.length > 0) out.changes = h.changes
+        if (h?.changesOmitted !== undefined && h.changesOmitted > 0) out.changesOmitted = h.changesOmitted
+        return out
+      }),
+    ]
+  }
+
+  private ownList(sessionId: string): BoardTask[] {
+    const m = this.lists.get(sessionId)
+    return m === undefined ? [] : [...m.values()].map(clean)
+  }
+
+  /**
+   * `resultText`, `changes` and `changesOmitted` per card, with the snapshot caps applied: the newest
+   * RICH_DONE_MAX done cards (and every open card) keep the full result and their changes; older done
+   * cards keep RESULT_OLD_MAX chars of the result and no changes. Diff text is handed out in priority
+   * order (open cards, then done newest first) until SNAPSHOT_DIFF_BUDGET is spent; after that a
+   * change keeps its path and counts, with `truncated`.
+   */
+  private heavyFields(d: Derived): Map<string, Pick<BoardTask, 'resultText' | 'changes' | 'changesOmitted'>> {
+    const out = new Map<string, Pick<BoardTask, 'resultText' | 'changes' | 'changesOmitted'>>()
+    if (d.results.size === 0 && d.changes.size === 0) return out
+    const open = [...d.cards.values()].filter(c => c.status !== 'done').map(c => c.id)
+    const done = [...d.doneAt.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id)
+    let budget = SNAPSHOT_DIFF_BUDGET
+    ;[...open, ...done].forEach((id, i) => {
+      const rich = i < open.length + RICH_DONE_MAX
+      const fields: Pick<BoardTask, 'resultText' | 'changes' | 'changesOmitted'> = {}
+      const text = d.results.get(id)
+      if (text !== undefined) fields.resultText = rich ? text : clipKeep(text, RESULT_OLD_MAX)
+      const files = d.changes.get(id)
+      if (rich && files !== undefined && files.size > 0) {
+        fields.changes = [...files.values()].map(acc => {
+          const c: CardChange = { path: acc.path, additions: acc.additions, deletions: acc.deletions }
+          const diff = acc.lines.join('\n')
+          if (diff !== '' && diff.length <= budget) {
+            c.diff = diff
+            budget -= diff.length
+            if (acc.truncated) c.truncated = true
+          } else {
+            c.truncated = true
+          }
+          if (acc.via.length > 0) c.via = [...acc.via]
+          return c
+        })
+        const more = d.omitted.get(id)?.size ?? 0
+        if (more > 0) fields.changesOmitted = more
+      }
+      if (fields.resultText !== undefined || fields.changes !== undefined) out.set(id, fields)
+    })
+    return out
   }
 
   clear(sessionId: string): void {
@@ -239,7 +372,19 @@ export class TaskBook {
   private dbook(sessionId: string): Derived {
     let d = this.derived.get(sessionId)
     if (d === undefined) {
-      d = { cards: new Map(), doneAt: new Map(), pending: [], goals: 0, agentCards: new Map(), finished: new Map() }
+      d = {
+        cards: new Map(),
+        results: new Map(),
+        changes: new Map(),
+        omitted: new Map(),
+        early: new Map(),
+        heavy: false,
+        doneAt: new Map(),
+        pending: [],
+        goals: 0,
+        agentCards: new Map(),
+        finished: new Map(),
+      }
       this.derived.set(sessionId, d)
     }
     return d
@@ -249,21 +394,78 @@ export class TaskBook {
   private changeCards(sessionId: string, fn: (d: Derived) => void): boolean {
     const d = this.dbook(sessionId)
     const before = JSON.stringify([...d.cards.values()].map(clean))
+    d.heavy = false
     fn(d)
     this.capDone(d)
-    return JSON.stringify([...d.cards.values()].map(clean)) !== before
+    const heavy = d.heavy
+    d.heavy = false
+    return heavy || JSON.stringify([...d.cards.values()].map(clean)) !== before
   }
 
   private setStatus(d: Derived, card: BoardTask, status: BoardStatus, result?: CardResult): void {
+    const was = card.status
     card.status = status
     if (status === 'done') {
       if (!d.doneAt.has(card.id)) d.doneAt.set(card.id, ++this.doneCounter)
+      if (was !== 'done' || card.doneAt === undefined) card.doneAt = this.now()
       if (result !== undefined) card.result = result
       else delete card.result
     } else {
       d.doneAt.delete(card.id)
       delete card.result
+      delete card.doneAt
+      if (status === 'doing' && card.startedAt === undefined) card.startedAt = this.now()
     }
+  }
+
+  /** The card's final answer (trimmed, clipped to RESULT_MAX); an empty answer keeps an earlier one. */
+  private setResult(d: Derived, cardId: string, answer: string | undefined): void {
+    const t = (answer ?? '').trim()
+    if (t === '') return
+    const text = clipKeep(t, RESULT_MAX)
+    if (d.results.get(cardId) === text) return
+    d.results.set(cardId, text)
+    d.heavy = true
+  }
+
+  /** Adds one edit to a card's changes (same file: hunks appended, counts summed), within the caps. */
+  private addChange(d: Derived, cardId: string, p: PatchSeen, via?: string): void {
+    if (!d.cards.has(cardId)) return
+    let files = d.changes.get(cardId)
+    if (files === undefined) {
+      files = new Map()
+      d.changes.set(cardId, files)
+    }
+    let acc = files.get(p.path)
+    if (acc === undefined) {
+      if (files.size >= CHANGE_FILES_MAX) {
+        let more = d.omitted.get(cardId)
+        if (more === undefined) {
+          more = new Set()
+          d.omitted.set(cardId, more)
+        }
+        if (!more.has(p.path) && more.size < 10_000) {
+          more.add(p.path)
+          d.heavy = true
+        }
+        return
+      }
+      acc = { path: p.path, additions: 0, deletions: 0, lines: [], chars: 0, truncated: false, via: [] }
+      files.set(p.path, acc)
+    }
+    acc.additions += p.additions
+    acc.deletions += p.deletions
+    if (via !== undefined && !acc.via.includes(via) && acc.via.length < 10) acc.via.push(via)
+    for (const line of p.lines) {
+      if (acc.truncated) break
+      if (acc.lines.length >= CHANGE_LINES_MAX || acc.chars + line.length + 1 > CHANGE_CHARS_MAX) {
+        acc.truncated = true
+        break
+      }
+      acc.lines.push(line)
+      acc.chars += line.length + 1
+    }
+    d.heavy = true
   }
 
   /** Keeps the newest DONE_CARDS_MAX done cards. */
@@ -273,6 +475,9 @@ export class TaskBook {
     for (const [id] of order.slice(0, order.length - DONE_CARDS_MAX)) {
       d.doneAt.delete(id)
       d.cards.delete(id)
+      d.results.delete(id)
+      d.changes.delete(id)
+      d.omitted.delete(id)
       for (const [agent, cardId] of d.agentCards) if (cardId === id) d.agentCards.delete(agent)
     }
   }
@@ -281,7 +486,7 @@ export class TaskBook {
     const s = subject ?? cardSubject(text)
     if (s === undefined) return undefined
     d.goals += 1
-    const card: BoardTask = { id: `goal-${d.goals}`, subject: s, status: 'todo', source: 'goal' }
+    const card: BoardTask = { id: `goal-${d.goals}`, subject: s, status: 'todo', source: 'goal', createdAt: this.now() }
     const description = subject === undefined ? cardDescription(text, s) : undefined
     if (description !== undefined) card.description = description
     d.cards.set(card.id, card)
@@ -359,7 +564,7 @@ export class TaskBook {
     return this.changeCards(sessionId, d => {
       const id = `game-${inboxId}`
       if (d.cards.has(id)) return
-      const card: BoardTask = { id, subject, status: 'todo', source: 'game' }
+      const card: BoardTask = { id, subject, status: 'todo', source: 'game', createdAt: this.now() }
       const description = cardDescription(text, subject)
       if (description !== undefined) card.description = description
       d.cards.set(id, card)
@@ -421,14 +626,16 @@ export class TaskBook {
    * interrupted); an interrupted turn also drops the prompts queued behind it (Claude Code hands
    * them back to the input box; resubmitted, they get new cards). A subagent's: its card goes `done`.
    */
-  turnCompleted(sessionId: string, turnId: string, agentId: string | undefined, reason: unknown): boolean {
+  turnCompleted(sessionId: string, turnId: string, agentId: string | undefined, reason: unknown, answer?: string): boolean {
     const result = resultFor(reason)
     return this.changeCards(sessionId, d => {
       if (agentId !== undefined) {
         const card = d.cards.get(d.agentCards.get(agentId) ?? '')
-        if (card !== undefined) this.setStatus(d, card, 'done', result)
-        else {
-          d.finished.set(agentId, result ?? '')
+        if (card !== undefined) {
+          this.setStatus(d, card, 'done', result)
+          this.setResult(d, card.id, answer)
+        } else {
+          d.finished.set(agentId, { result: result ?? '', answer: answer ?? '' })
           while (d.finished.size > FINISHED_AGENTS_MAX) {
             const first = d.finished.keys().next().value
             if (first === undefined) break
@@ -439,7 +646,9 @@ export class TaskBook {
       }
       for (const id of d.main?.cards ?? []) {
         const card = d.cards.get(id)
-        if (card !== undefined) this.setStatus(d, card, 'done', result)
+        if (card === undefined) continue
+        this.setStatus(d, card, 'done', result)
+        this.setResult(d, id, answer)
       }
       d.main = undefined
       if (reason === 'aborted') {
@@ -464,7 +673,7 @@ export class TaskBook {
       if (s.agentId === undefined) for (let n = 2; d.cards.has(id); n++) id = `agent-${key}-${n}`
       const subject =
         clip(s.description, CARD_SUBJECT_MAX) ?? cardSubject(s.prompt ?? '') ?? clip(s.subagentType, CARD_SUBJECT_MAX) ?? 'Subagent'
-      const card: BoardTask = d.cards.get(id) ?? { id, subject, status: 'doing', source: 'agent' }
+      const card: BoardTask = d.cards.get(id) ?? { id, subject, status: 'doing', source: 'agent', createdAt: this.now() }
       card.subject = subject
       const owner = clip(s.subagentType, OWNER_MAX)
       if (owner !== undefined) card.owner = owner
@@ -476,13 +685,55 @@ export class TaskBook {
       if (parent !== undefined) card.parent = parent
       d.cards.set(id, card)
       if (s.agentId !== undefined) d.agentCards.set(s.agentId, id)
+      // edits it made before its spawn answered
+      const early = s.agentId === undefined ? undefined : d.early.get(s.agentId)
+      if (early !== undefined) {
+        d.early.delete(s.agentId ?? '')
+        this.setStatus(d, card, 'doing')
+        for (const p of early) {
+          this.addChange(d, id, p)
+          if (card.parent !== undefined) this.addChange(d, card.parent, p, id)
+        }
+      }
       const ended = s.agentId === undefined ? undefined : d.finished.get(s.agentId)
       if (ended !== undefined) {
         d.finished.delete(s.agentId ?? '')
-        this.setStatus(d, card, 'done', ended === '' ? undefined : ended)
+        this.setStatus(d, card, 'done', ended.result === '' ? undefined : ended.result)
+        this.setResult(d, id, ended.answer)
       } else {
         this.setStatus(d, card, 'doing')
       }
+    })
+  }
+
+  /**
+   * A finished edit tool call (Edit / Write / MultiEdit / NotebookEdit). The main loop's goes to the
+   * cards of the running main turn; a subagent's (`agentId`) to that agent's card and, marked `via`
+   * it, to the agent card's goal. An agent whose spawn was not seen yet keeps it until it is.
+   */
+  fileChanged(sessionId: string, agentId: string | undefined, p: PatchSeen): boolean {
+    return this.changeCards(sessionId, d => {
+      if (agentId === undefined) {
+        for (const id of d.main?.cards ?? []) this.addChange(d, id, p)
+        return
+      }
+      const cardId = d.agentCards.get(agentId)
+      const card = cardId === undefined ? undefined : d.cards.get(cardId)
+      if (card === undefined) {
+        let list = d.early.get(agentId)
+        if (list === undefined) {
+          if (d.early.size >= EARLY_AGENTS_MAX) {
+            const first = d.early.keys().next().value
+            if (first !== undefined) d.early.delete(first)
+          }
+          list = []
+          d.early.set(agentId, list)
+        }
+        if (list.length < EARLY_PATCHES_MAX) list.push(p)
+        return
+      }
+      this.addChange(d, card.id, p)
+      if (card.parent !== undefined) this.addChange(d, card.parent, p, card.id)
     })
   }
 
@@ -498,11 +749,12 @@ export class TaskBook {
   /** Runs `fn` on the session's list; true when the snapshot changed. */
   private change(sessionId: string, fn: (m: Map<string, BoardTask>) => Map<string, BoardTask> | void): boolean {
     const existed = this.lists.has(sessionId)
-    const before = existed ? JSON.stringify(this.list(sessionId)) : ''
+    // only Claude's own tasks change here: the derived cards (and their heavy fields) stay out of it
+    const before = existed ? JSON.stringify(this.ownList(sessionId)) : ''
     const m = this.book(sessionId)
     const replaced = fn(m)
     if (replaced !== undefined) this.lists.set(sessionId, replaced)
-    return !existed || JSON.stringify(this.list(sessionId)) !== before
+    return !existed || JSON.stringify(this.ownList(sessionId)) !== before
   }
 
   /**

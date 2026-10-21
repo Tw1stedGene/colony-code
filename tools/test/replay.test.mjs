@@ -52,6 +52,17 @@ function checkProtocolShape(events) {
         assert.ok(['goal', 'agent', 'game', 'claude'].includes(t.source), `task source ${t.source}`);
         if (t.parent !== undefined) assert.ok(ev.tasks.some((p) => p.id === t.parent), `parent ${t.parent} is on the board`);
         if (t.result !== undefined) { assert.equal(t.status, 'done'); assert.ok(['failed', 'interrupted'].includes(t.result)); }
+        // task details (v0.3.1): optional, bounded, never an absolute home path
+        if (t.resultText !== undefined) { assert.equal(typeof t.resultText, 'string'); assert.ok(t.resultText.length <= 4000); assert.notEqual(t.source, 'claude'); }
+        if (t.changes !== undefined) {
+          assert.ok(Array.isArray(t.changes) && t.changes.length > 0 && t.changes.length <= 20);
+          for (const c of t.changes) {
+            assert.equal(typeof c.path, 'string');
+            assert.ok(!/^(\/Users\/|\/home\/)/.test(c.path), `private path ${c.path}`);
+            assert.ok(Number.isInteger(c.additions) && Number.isInteger(c.deletions));
+            if (c.diff !== undefined) { assert.equal(typeof c.diff, 'string'); assert.ok(c.diff.split('\n').length <= 300); }
+          }
+        }
       }
     }
     if (ev.type === 'decision.open') {
@@ -152,6 +163,12 @@ describe('replay against fake-bridge', () => {
         'goal-1:goal:done', `agent-${workers[0].id}:agent:done`, 'game-replay-1:game:done',
       ]);
       assert.equal(final.find((t) => t.source === 'agent').parent, 'goal-1');
+      // what each done card produced: Claude's answer, and the files the goal's turn changed
+      const goalCard = final.find((t) => t.id === 'goal-1');
+      assert.match(goalCard.resultText, /3 files changed/);
+      assert.deepEqual(goalCard.changes.map((c) => `${c.path} +${c.additions} -${c.deletions}`), ['src/model/todo.ts +5 -0', 'src/ui/list.ts +3 -1', 'test/list.test.ts +1 -1']);
+      assert.match(final.find((t) => t.source === 'agent').resultText, /1 failure/);
+      assert.equal(final.find((t) => t.id === 'game-replay-1').changes[0].path, 'CHANGELOG.md');
       assert.ok(snaps.some((e) => e.tasks.some((t) => t.id === 'game-replay-1' && t.status === 'todo')), 'game card waits in To do first');
       assert.equal(final.find((t) => t.id === '3').agentId, workers[0].id);
       assert.equal(final.find((t) => t.id === '1').agentId, leadId);

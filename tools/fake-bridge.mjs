@@ -23,7 +23,7 @@
 //   showdiff [requestId]        print a received diff.result (default: the last one)
 //   usage | worktrees | reviews show usage per session, worktrees per session, merge results
 //   state                       print the agents table and the task board
-//   tasks                       print the task board (To do / In progress / Done)
+//   tasks                       print the task board (To do / In progress / Done; ✓ = has a result)
 //   decisions                   list decisions
 //   goals                       list goals
 //   inbox                       show undelivered inbox items
@@ -575,7 +575,7 @@ export function formatEvent(ev) {
       const list = Array.isArray(ev.tasks) ? ev.tasks : [];
       const n = (st) => list.filter((t) => t && t.status === st).length;
       return head(col.blue(col.bold('task.snapshot')), `${list.length} task(s): to do ${n('todo')}, in progress ${n('doing')}, done ${n('done')}`) +
-        (list.length ? '\n' + list.map((t) => `    ${taskMark(t.status)} ${col.bold('#' + t.id)} ${col.dim('[' + taskSource(t) + ']')} ${t.subject}${t.result ? col.red(' (' + t.result + ')') : ''}${t.parent ? col.dim(' for #' + t.parent) : ''}${t.agentId ? col.dim(' by ' + t.agentId) : ''}${t.blockedBy && t.blockedBy.length ? col.red(' blocked by ' + t.blockedBy.map((b) => '#' + b).join(',')) : ''}`).join('\n') : '');
+        (list.length ? '\n' + list.map((t) => `    ${taskMark(t.status)} ${col.bold('#' + t.id)} ${col.dim('[' + taskSource(t) + ']')} ${t.subject}${t.result ? col.red(' (' + t.result + ')') : ''}${t.parent ? col.dim(' for #' + t.parent) : ''}${t.agentId ? col.dim(' by ' + t.agentId) : ''}${t.blockedBy && t.blockedBy.length ? col.red(' blocked by ' + t.blockedBy.map((b) => '#' + b).join(',')) : ''}${taskDetails(t)}`).join('\n') : '');
     }
     case 'goal.upsert': {
       const g = ev.goal || {};
@@ -654,6 +654,26 @@ export function taskSource(t) {
   return ['goal', 'agent', 'game', 'claude'].includes(t && t.source) ? t.source : 'claude';
 }
 
+/** Task details (v0.3.1): one dim line each for the result and the changed files, '' when none. */
+export function taskDetails(t) {
+  let s = '';
+  if (typeof t.resultText === 'string' && t.resultText !== '') {
+    s += '\n        ' + col.green('✓ ') + col.dim(oneLine(t.resultText, 100));
+  }
+  const changes = Array.isArray(t.changes) ? t.changes : [];
+  if (changes.length) {
+    const files = changes.map((c) => `${c.path} ${col.green('+' + (c.additions ?? 0))} ${col.red('-' + (c.deletions ?? 0))}${c.via ? col.dim(' via ' + c.via.join(',')) : ''}${c.truncated ? col.dim(' (cut)') : ''}`);
+    const more = t.changesOmitted ? col.dim(` +${t.changesOmitted} more`) : '';
+    s += '\n        ' + col.dim('changes: ') + files.join(', ') + more;
+  }
+  return s;
+}
+
+function oneLine(text, max) {
+  const flat = String(text).replace(/\s+/g, ' ').trim();
+  return flat.length > max ? flat.slice(0, max - 1) + '…' : flat;
+}
+
 function taskMark(status) {
   if (status === 'done') return col.green('[x]');
   if (status === 'doing') return col.cyan('[>]');
@@ -701,6 +721,9 @@ export function formatTasks(bridge, width = 110) {
     const src = taskSource(t);
     let s = `${t.parent ? '↳ ' : ''}#${t.id} ${src === 'claude' ? '' : `[${src}] `}${t.subject}`;
     if (t.result) s += ` (${t.result})`;
+    // ✓: Claude's answer for it is in (resultText); the files it changed are counted
+    if (typeof t.resultText === 'string' && t.resultText !== '') s += ' ✓';
+    if (Array.isArray(t.changes) && t.changes.length) s += ` (${t.changes.length + (t.changesOmitted || 0)} file${t.changes.length + (t.changesOmitted || 0) === 1 ? '' : 's'})`;
     if (t.blockedBy && t.blockedBy.length) s += ' (blocked)';
     const who = t.owner || t.agentId;
     if (who) s += ` @${who}`;
@@ -779,7 +802,7 @@ Commands:
   worktrees                      the last worktree.list per session
   reviews                        merge results
   state                          agents table and task board
-  tasks                          task board (To do / In progress / Done)
+  tasks                          task board (To do / In progress / Done; ✓ = has a result, (n files) changed)
   decisions | goals | inbox | help | quit`;
 
 export function runCommand(bridge, line, out = console.log) {

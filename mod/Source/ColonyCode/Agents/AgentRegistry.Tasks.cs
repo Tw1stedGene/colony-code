@@ -48,6 +48,117 @@ namespace ColonyCode.Agents
         public bool pending;
 
         public bool IsBlocked => blockedBy != null && blockedBy.Count > 0;
+
+        // Task details (protocol v0.3.1, all optional; derived cards only).
+        /// <summary>When the card was made / its turn first started / it went done (epoch ms), 0 when unknown.</summary>
+        public long createdAt, startedAt, doneAt;
+        /// <summary>Claude's final answer for this card (markdown, home paths made private), or null.</summary>
+        public string resultText;
+        /// <summary>Files the card's turn(s) changed, in the plugin's order.</summary>
+        public List<TaskChange> changes = new List<TaskChange>();
+        /// <summary>Files changed beyond the ones listed.</summary>
+        public int changesOmitted;
+        /// <summary>Bumped whenever resultText or changes change: the details window rebuilds its caches then.</summary>
+        public int detailVersion;
+    }
+
+    /// <summary>One file a card's turn changed (task.snapshot "changes").</summary>
+    public class TaskChange
+    {
+        public string path;
+        public int additions;
+        public int deletions;
+        /// <summary>Unified hunks ("@@ -a,b +c,d @@", "+", "-", " " lines), or null when left out.</summary>
+        public string diff;
+        public bool truncated;
+        /// <summary>On a goal card: the subagent cards whose edits are included.</summary>
+        public List<string> via = new List<string>();
+
+        private DiffFile parsed;
+
+        /// <summary>The diff as a DiffFile for DiffRowsView, parsed once.</summary>
+        public DiffFile Parsed
+        {
+            get
+            {
+                if (parsed == null) parsed = ParseUnified(path, diff, additions, deletions);
+                return parsed;
+            }
+        }
+
+        public bool SameAs(TaskChange o)
+        {
+            if (o == null || o.path != path || o.additions != additions || o.deletions != deletions || o.truncated != truncated || o.diff != diff) return false;
+            if (o.via.Count != via.Count) return false;
+            for (int i = 0; i < via.Count; i++) if (o.via[i] != via[i]) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Unified hunk text → DiffFile. Line numbers come from "@@ -a,b +c,d @@" headers; a header
+        /// without numbers ("@@", the plugin's fallback) leaves them 0 (not shown). File headers
+        /// ("--- a/x", "+++ b/x") are skipped.
+        /// </summary>
+        public static DiffFile ParseUnified(string path, string diff, int additions, int deletions)
+        {
+            var f = new DiffFile { path = path ?? "?", status = "modified", additions = additions, deletions = deletions };
+            if (string.IsNullOrEmpty(diff)) return f;
+            DiffHunk h = null;
+            int oldNo = 0, newNo = 0;
+            foreach (var raw in diff.Replace("\r", "").Split('\n'))
+            {
+                if (raw.StartsWith("@@"))
+                {
+                    h = new DiffHunk { header = raw };
+                    f.hunks.Add(h);
+                    ParseHeader(raw, out oldNo, out newNo);
+                    continue;
+                }
+                if (raw.StartsWith("+++ ") || raw.StartsWith("--- ")) continue;
+                if (h == null)
+                {
+                    h = new DiffHunk { header = "" };
+                    f.hunks.Add(h);
+                }
+                var l = new DiffLine { text = raw.Length > 0 ? raw.Substring(1) : "" };
+                char c = raw.Length > 0 ? raw[0] : ' ';
+                if (c == '+') { l.kind = "add"; l.newNo = newNo > 0 ? newNo++ : 0; }
+                else if (c == '-') { l.kind = "del"; l.oldNo = oldNo > 0 ? oldNo++ : 0; }
+                else
+                {
+                    l.kind = "ctx";
+                    if (c != ' ') l.text = raw; // "\ No newline at end of file" and the like
+                    else
+                    {
+                        l.oldNo = oldNo > 0 ? oldNo++ : 0;
+                        l.newNo = newNo > 0 ? newNo++ : 0;
+                    }
+                }
+                h.lines.Add(l);
+            }
+            return f;
+        }
+
+        /// <summary>"@@ -12,3 +12,4 @@ ..." → 12, 12. A side that starts at 0 (a new file) counts from 1.</summary>
+        private static void ParseHeader(string header, out int oldNo, out int newNo)
+        {
+            oldNo = 0;
+            newNo = 0;
+            int minus = header.IndexOf(" -", StringComparison.Ordinal);
+            int plus = header.IndexOf(" +", StringComparison.Ordinal);
+            if (minus < 0 || plus < 0) return;
+            int a = ReadInt(header, minus + 2), c = ReadInt(header, plus + 2);
+            if (a < 0 || c < 0) return;
+            oldNo = Math.Max(1, a);
+            newNo = Math.Max(1, c);
+        }
+
+        private static int ReadInt(string s, int i)
+        {
+            int n = 0, digits = 0;
+            while (i < s.Length && s[i] >= '0' && s[i] <= '9' && digits < 9) { n = n * 10 + (s[i] - '0'); i++; digits++; }
+            return digits == 0 ? -1 : n;
+        }
     }
 
     /// <summary>
@@ -116,6 +227,7 @@ namespace ColonyCode.Agents
                 t.parent = Clip(Json.GetString(d, "parent"), 120);
                 string result = Json.GetString(d, "result");
                 t.result = status == "done" && (result == "failed" || result == "interrupted") ? result : null;
+                ReadDetails(t, d);
                 t.blockedBy.Clear();
                 var blockers = Json.GetList(d, "blockedBy");
                 if (blockers != null)
@@ -143,6 +255,77 @@ namespace ColonyCode.Agents
             tasksBySession[session] = fresh;
             if (!taskSessionOrder.Contains(session)) taskSessionOrder.Add(session);
             RebuildTasks();
+        }
+
+        /// <summary>Most files read per card (the plugin sends at most 20).</summary>
+        private const int MaxChangesPerCard = 50;
+        /// <summary>Diff text kept per file (the plugin caps it at 12 000 chars).</summary>
+        private const int MaxDiffChars = 20000;
+
+        /// <summary>
+        /// Task details (v0.3.1): timestamps, resultText and changes. Paths and text go through
+        /// Privacy.Path (the plugin scrubs them already; this guards older plugins). Unchanged changes
+        /// keep their objects (and their parsed diffs); detailVersion bumps when anything differs.
+        /// </summary>
+        private static void ReadDetails(TaskInfo t, Dictionary<string, object> d)
+        {
+            t.createdAt = Json.GetLong(d, "createdAt");
+            t.startedAt = Json.GetLong(d, "startedAt");
+            t.doneAt = t.status == "done" ? Json.GetLong(d, "doneAt") : 0;
+            bool changed = false;
+
+            string result = Privacy.Path(ClipKeepLines(Json.GetString(d, "resultText"), 4100));
+            if (result != t.resultText) { t.resultText = result; changed = true; }
+
+            int omitted = (int)Math.Max(0, Math.Min(100000, Json.GetLong(d, "changesOmitted")));
+            if (omitted != t.changesOmitted) { t.changesOmitted = omitted; changed = true; }
+
+            var fresh = new List<TaskChange>();
+            var list = Json.GetList(d, "changes");
+            if (list != null)
+                foreach (var o in list)
+                {
+                    if (fresh.Count >= MaxChangesPerCard) break;
+                    var cd = o as Dictionary<string, object>;
+                    if (cd == null) continue;
+                    string path = Privacy.Path(Clip(Json.GetString(cd, "path"), 300));
+                    if (path == null) continue;
+                    string diff = Json.GetString(cd, "diff");
+                    if (diff != null && diff.Length > MaxDiffChars) diff = diff.Substring(0, MaxDiffChars);
+                    var c = new TaskChange
+                    {
+                        path = path,
+                        additions = (int)Math.Max(0, Math.Min(int.MaxValue, Json.GetLong(cd, "additions"))),
+                        deletions = (int)Math.Max(0, Math.Min(int.MaxValue, Json.GetLong(cd, "deletions"))),
+                        diff = string.IsNullOrEmpty(diff) ? null : Privacy.Path(diff),
+                        truncated = Json.GetBool(cd, "truncated"),
+                    };
+                    var via = Json.GetList(cd, "via");
+                    if (via != null)
+                        foreach (var v in via)
+                            if (v is string vs && vs.Length > 0 && c.via.Count < 10) c.via.Add(vs);
+                    fresh.Add(c);
+                }
+            if (fresh.Count != t.changes.Count) changed = true;
+            for (int i = 0; i < fresh.Count; i++)
+            {
+                // keep the old object (and its parsed diff) when nothing about the file changed
+                var old = t.changes.Find(x => x.path == fresh[i].path);
+                if (old != null && old.SameAs(fresh[i])) fresh[i] = old;
+                else changed = true;
+                if (!changed && !ReferenceEquals(t.changes[i], fresh[i])) changed = true;
+            }
+            t.changes = fresh;
+            if (changed) t.detailVersion++;
+        }
+
+        /// <summary>Trimmed and clipped like Clip, keeping newlines; null when empty.</summary>
+        private static string ClipKeepLines(string s, int max)
+        {
+            if (string.IsNullOrEmpty(s)) return null;
+            s = s.Replace("\r", "").Trim();
+            if (s.Length == 0) return null;
+            return s.Length <= max ? s : s.Substring(0, max - 1) + "…";
         }
 
         /// <summary>session.start: the session is back, keep its tasks (its snapshot follows).</summary>

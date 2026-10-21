@@ -23,6 +23,7 @@ import {
   branchFromHead,
   describePermission,
   diffFor,
+  editPatch,
   folderName,
   hmacSha256Hex,
   leadIdFor,
@@ -1003,6 +1004,11 @@ export const register: Register = on => {
         if (TASK_TOOLS.has(e.tool) && ran.deny === undefined && ran.isError !== true && sessionId !== '') {
           markTasks(tasks.applyTool(sessionId, e.tool, args, ran.result, ran.text, id))
         }
+        // the card's "Changes": what this edit did, on the running goal (main loop) or the subagent's card
+        if (ran.deny === undefined && ran.isError !== true && sessionId !== '') {
+          const patch = editPatch(e.tool, args, ran.result, cwd, userHome)
+          if (patch !== undefined) markTasks(tasks.fileChanged(sessionId, e.agentId, patch))
+        }
       }
     } catch {
       // ignore
@@ -1075,7 +1081,8 @@ export const register: Register = on => {
       )
       if (e.answer.trim() !== '') log(id, [{ ts: now(), kind: 'text', text: truncate(e.answer, 600) }])
       scheduleIdle($, id)
-      if (sessionId !== '') markTasks(tasks.turnCompleted(sessionId, e.turnId, e.agentId, e.reason))
+      // e.answer: the turn's final visible text (a subagent's: the report it handed back) → resultText
+      if (sessionId !== '') markTasks(tasks.turnCompleted(sessionId, e.turnId, e.agentId, e.reason, e.answer))
       if (e.usage !== undefined) {
         const u = e.usage
         usage.inputTokens += (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0)
